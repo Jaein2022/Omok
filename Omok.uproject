@@ -1,13 +1,16 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{A48E4636-4309-75B1-FD46-2FA7BF907B7A}",
+	"EngineAssociation": "{4F72A1A1-4B15-F20F-EE5F-939601772F33}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
 		{
 			"Name": "Omok",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
 		}
 	],
 	"Plugins": [
