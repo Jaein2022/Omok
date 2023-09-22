@@ -6,6 +6,7 @@
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Board/OmokBoard.h"
 
 AOmokGameModeBase::AOmokGameModeBase()
 {
@@ -30,6 +31,9 @@ AOmokGameModeBase::AOmokGameModeBase()
 	this->IMC = IMCObjectRef.Object;
 
 
+	//this->OmokBoard = GetWorld()->SpawnActor<AOmokBoard>();
+	//this->OmokBoard->SetActorLocation(FVector(0.f, 0.f, -0.5f));
+	//액터 스폰은 레벨에서 해야 한다.
 
 }
 
