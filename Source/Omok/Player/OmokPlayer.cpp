@@ -2,10 +2,7 @@
 
 
 #include "OmokPlayer.h"
-#include "InputMappingContext.h"
-#include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
-//#include "OmokMousePointerWidget.h"
 
 // Sets default values
 AOmokPlayer::AOmokPlayer()
@@ -16,17 +13,17 @@ AOmokPlayer::AOmokPlayer()
 	this->OmokPlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("OmokCamera"));
 	this->OmokPlayerCamera->SetupAttachment(this->RootComponent);
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> MouseLocationRef(
-		TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokMouseLocation.IA_OmokMouseLocation'")
-	);
-	ensure(MouseLocationRef.Succeeded());
-	this->OmokMouseLocation = MouseLocationRef.Object;
+	//static ConstructorHelpers::FObjectFinder<UInputAction> MouseLocationRef(
+	//	TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokMouseLocation.IA_OmokMouseLocation'")
+	//);
+	//ensure(MouseLocationRef.Succeeded());
+	//this->OmokMouseLocation = MouseLocationRef.Object;
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> MouseClickRef(
-		TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokMouseClick.IA_OmokMouseClick'")
-	);
-	ensure(MouseClickRef.Succeeded());
-	this->OmokMouseClick = MouseClickRef.Object;
+	//static ConstructorHelpers::FObjectFinder<UInputAction> MouseClickRef(
+	//	TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokMouseClick.IA_OmokMouseClick'")
+	//);
+	//ensure(MouseClickRef.Succeeded());
+	//this->OmokMouseClick = MouseClickRef.Object;
 
 	
 
