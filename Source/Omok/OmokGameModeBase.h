@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -14,4 +14,23 @@ class OMOK_API AOmokGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+
+public:
+	AOmokGameModeBase();
+
+	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaSecond) override;
+
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+
+protected:
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Input)
+	TObjectPtr<class UInputMappingContext> IMC;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	//TObjectPtr<class AOmokBoard> OmokBoard;
+
+
 };
