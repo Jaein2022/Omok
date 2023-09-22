@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "InputActionValue.h"
 #include "OmokPlayer.generated.h"
 
 UCLASS()
@@ -32,11 +31,11 @@ public:
 
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-	TObjectPtr<class UInputAction> OmokMouseLocation;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-	TObjectPtr<class UInputAction> OmokMouseClick;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
+	//TObjectPtr<class UInputAction> OmokMouseLocation;
+	//
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
+	//TObjectPtr<class UInputAction> OmokMouseClick;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<class UCameraComponent> OmokPlayerCamera;
