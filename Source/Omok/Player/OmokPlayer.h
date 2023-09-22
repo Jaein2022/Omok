@@ -24,20 +24,24 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	//// Called to bind functionality to input
+	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void RenderPointer(const FInputActionValue& Input);
-	void Click(const FInputActionValue& Input);
+	//void RenderPointer(const FInputActionValue& Input);
+	//void Click(const FInputActionValue& Input);
 
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<class UInputAction> OmokMouseLocation;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<class UInputAction> OmokMouseClick;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<class UCameraComponent> OmokPlayerCamera;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = UI)
+	//TObjectPtr<class UOmokMousePointerWidget> OmokMousePointer;
+
 };

@@ -26,7 +26,11 @@ public:
 
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<class UInputMappingContext> IMC;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	//TObjectPtr<class AOmokBoard> OmokBoard;
+
 
 };
