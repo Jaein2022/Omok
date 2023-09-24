@@ -66,5 +66,4 @@ void UOmokGameInstance::Join(const FString& Address)
 
 	PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 
-
 }
