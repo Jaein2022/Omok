@@ -26,21 +26,9 @@ public:
 	//// Called to bind functionality to input
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//void RenderPointer(const FInputActionValue& Input);
-	//void Click(const FInputActionValue& Input);
-
-
 protected:
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-	//TObjectPtr<class UInputAction> OmokMouseLocation;
-	//
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-	//TObjectPtr<class UInputAction> OmokMouseClick;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<class UCameraComponent> OmokPlayerCamera;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = UI)
-	//TObjectPtr<class UOmokMousePointerWidget> OmokMousePointer;
 
 };

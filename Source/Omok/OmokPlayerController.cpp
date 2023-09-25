@@ -10,7 +10,7 @@ AOmokPlayerController::AOmokPlayerController()
 	bEnableClickEvents = true;
 }
 
-void AOmokPlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-}
+//void AOmokPlayerController::BeginPlay()
+//{
+//	Super::BeginPlay();
+//}

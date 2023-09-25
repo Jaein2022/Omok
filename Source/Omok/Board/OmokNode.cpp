@@ -11,6 +11,9 @@ AOmokNode::AOmokNode()
 	PrimaryActorTick.bCanEverTick = true;
 	//얘도 틱 필요 없을것 같은데.
 
+	IsFixed = false;
+	//처음에는 고정시키면 안됨.
+
 	this->NodeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("NodeMesh"));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> NodeMeshRef(
@@ -26,17 +29,29 @@ AOmokNode::AOmokNode()
 	ensure(BlackMaterialRef.Succeeded());
 	BlackMaterial = BlackMaterialRef.Object;
 	
+	static ConstructorHelpers::FObjectFinder<UMaterial> ClearBlackMaterialRef(
+		TEXT("/Script/Engine.Material'/Game/NodeMaterial/M_ClearBlack.M_ClearBlack'")
+	);
+	ensure(ClearBlackMaterialRef.Succeeded());
+	ClearBlackMaterial = ClearBlackMaterialRef.Object;
+	
 	static ConstructorHelpers::FObjectFinder<UMaterial> WhiteMaterialRef(
 		TEXT("/Script/Engine.Material'/Game/NodeMaterial/M_White.M_White'")
 	);
 	ensure(WhiteMaterialRef.Succeeded());
 	WhiteMaterial = WhiteMaterialRef.Object;
 	
-	static ConstructorHelpers::FObjectFinder<UMaterial> TransparentMaterialRef(
+	static ConstructorHelpers::FObjectFinder<UMaterial> ClearWhiteMaterialRef(
+		TEXT("/Script/Engine.Material'/Game/NodeMaterial/M_ClearWhite.M_ClearWhite'")
+	);
+	ensure(ClearWhiteMaterialRef.Succeeded());
+	ClearWhiteMaterial = ClearWhiteMaterialRef.Object;
+	
+	static ConstructorHelpers::FObjectFinder<UMaterial> ClearMaterialRef(
 		TEXT("/Script/Engine.Material'/Game/NodeMaterial/M_Transparent.M_Transparent'")
 	);
-	ensure(TransparentMaterialRef.Succeeded());
-	ClearMaterial = TransparentMaterialRef.Object;
+	ensure(ClearMaterialRef.Succeeded());
+	ClearMaterial = ClearMaterialRef.Object;
 
 	SetNodeColor(ENodeColor::Clear);
 
@@ -49,8 +64,6 @@ AOmokNode::AOmokNode()
 	
 	ClickDelegate.BindUFunction(this, "ReactOnClick");
 	NodeMesh->OnClicked.Add(ClickDelegate);
-
-	//NodeMesh->OnBeginCursorOver.
 
 }
 
@@ -84,7 +97,7 @@ void AOmokNode::SetNodeColor(ENodeColor NewColor)
 		
 	case ENodeColor::ClearBlack:
 	{
-
+		NodeMesh->SetMaterial(0, ClearBlackMaterial);
 		break;
 	}
 
@@ -96,7 +109,7 @@ void AOmokNode::SetNodeColor(ENodeColor NewColor)
 
 	case ENodeColor::ClearWhite:
 	{
-
+		NodeMesh->SetMaterial(0, ClearWhiteMaterial);
 		break;
 	}
 
@@ -115,16 +128,39 @@ void AOmokNode::SetNodeColor(ENodeColor NewColor)
 
 void AOmokNode::ReactOnBeginCursorOverlap()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("OverlapBegin!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("OverlapBegin!"));
+
+	if(true == IsFixed)
+	{
+		return;
+	}
+
+	SetNodeColor(ENodeColor::ClearBlack);
 }
 
 void AOmokNode::ReactOnEndCursorOverlap()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("OverlapEnd!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("OverlapEnd!"));
+
+	if(true == IsFixed)
+	{
+		return;
+	}
+
+	SetNodeColor(ENodeColor::Clear);
 }
 
 void AOmokNode::ReactOnClick()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("Click!"));
+	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("Click!"));
+
+	if(true == IsFixed)
+	{
+		return;
+	}
+
+	SetNodeColor(ENodeColor::Black);
+
+	IsFixed = true;
 }
 

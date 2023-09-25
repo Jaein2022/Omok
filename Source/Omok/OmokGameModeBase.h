@@ -31,6 +31,7 @@ protected:
 
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	//TObjectPtr<class AOmokBoard> OmokBoard;
+	//액터 스폰은 레벨에서 해야 한다.
 
 
 };

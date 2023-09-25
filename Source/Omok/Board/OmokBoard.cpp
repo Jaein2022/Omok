@@ -2,6 +2,7 @@
 
 
 #include "OmokBoard.h"
+#include "OmokNode.h"
 
 // Sets default values
 AOmokBoard::AOmokBoard()
@@ -20,7 +21,7 @@ AOmokBoard::AOmokBoard()
 	ensure(this->BoardMesh->SetStaticMesh(BoardMeshRef.Object));
 
 	this->BoardMesh->SetupAttachment(this->RootComponent);
-	this->BoardMesh->SetRelativeScale3D(FVector(15.f, 15.f, 1.f));
+	this->BoardMesh->SetRelativeScale3D(FVector(18.f, 18.f, 1.f));
 
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> BoardMaterialRef(
@@ -31,6 +32,9 @@ AOmokBoard::AOmokBoard()
 
 
 	this->BoardMesh->SetMaterial(0, this->BoardMaterial);
+
+	NodeDistance = 100.f;
+
 }
 
 // Called when the game starts or when spawned
@@ -38,6 +42,41 @@ void AOmokBoard::BeginPlay()
 {
 	Super::BeginPlay();
 	
+
+
+	const FVector2D InitLocation(NodeDistance * 7, -NodeDistance * 7);	//좌상단 노드 위치.
+	FActorSpawnParameters NodeSpawnParams;
+	NodeSpawnParams.Owner = this;
+	NodeSpawnParams.bNoFail = true;
+
+	const FAttachmentTransformRules NodeAttachmentRules(EAttachmentRule::KeepWorld, false);
+
+	AllNodes.Reserve(225);
+	for(int32 x = 0; x < 15; x++)
+	{
+		for(int32 y = 0; y < 15; y++)
+		{
+			const FString NodeName(FString::Printf(TEXT("OmokNode %d, %d"), x, y));
+			NodeSpawnParams.Name = FName(*NodeName);
+
+			AllNodes.Push(
+				GetWorld()->SpawnActor<AOmokNode>(
+					FVector(
+						InitLocation.X - (x * NodeDistance),
+						InitLocation.Y + (y * NodeDistance), 
+						100.f
+					), 
+					FRotator(),
+					NodeSpawnParams
+				)
+			);
+
+			AllNodes.Last()->AttachToComponent(this->RootComponent, NodeAttachmentRules);
+			AllNodes.Last()->SetActorLabel(NodeName);
+			//Label: 액터가 언리얼 에디터 뷰포트에 배치되었을때 보이는 이름. Name과 다르다.
+		}
+	}
+
 }
 
 // Called every frame

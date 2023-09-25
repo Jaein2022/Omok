@@ -67,7 +67,8 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UMaterial> ClearMaterial;
 
-	ENodeColor CurrentColor;
+	ENodeColor CurrentColor;	//현재 색상.
+	bool IsFixed;	//색상 고정 됨/안됨.
 
 	FScriptDelegate BeginCursorOverlapDelegate;
 	FScriptDelegate EndCursorOverlapDelegate;

@@ -3,6 +3,7 @@
 
 #include "OmokGameModeBase.h"
 #include "OmokPlayerController.h"
+#include "OmokGameStateBase.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -10,19 +11,24 @@
 
 AOmokGameModeBase::AOmokGameModeBase()
 {
-	static ConstructorHelpers::FClassFinder<APawn> OmokPlayerClassRef
-	(
+	static ConstructorHelpers::FClassFinder<APawn> OmokPlayerClassRef(
 		TEXT("/Script/CoreUObject.Class'/Script/Omok.OmokPlayer'")
 	);
 	ensure(OmokPlayerClassRef.Succeeded());
 	this->DefaultPawnClass = OmokPlayerClassRef.Class;
 
-	static ConstructorHelpers::FClassFinder<AOmokPlayerController> OmokPlayerControllerClassRef
-	(
+	static ConstructorHelpers::FClassFinder<AOmokPlayerController> OmokPlayerControllerClassRef(
 		TEXT("/Script/CoreUObject.Class'/Script/Omok.OmokPlayerController'")
 	);
 	ensure(OmokPlayerControllerClassRef.Succeeded());
 	this->PlayerControllerClass = OmokPlayerControllerClassRef.Class;
+
+	static ConstructorHelpers::FClassFinder<AOmokGameStateBase> OmokGameStateClassRef(
+		TEXT("/Script/CoreUObject.Class'/Script/Omok.OmokGameStateBase'")
+	);
+	ensure(OmokGameStateClassRef.Succeeded());
+	this->GameStateClass = OmokGameStateClassRef.Class;
+
 
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> IMCObjectRef(
 		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Player/Input/IMC_OmokPlayer.IMC_OmokPlayer'")
@@ -33,7 +39,7 @@ AOmokGameModeBase::AOmokGameModeBase()
 
 	//this->OmokBoard = GetWorld()->SpawnActor<AOmokBoard>();
 	//this->OmokBoard->SetActorLocation(FVector(0.f, 0.f, -0.5f));
-	//액터 스폰은 레벨에서 해야 한다.
+	//액터 스폰은 현재 레벨이 있는 상태에서 해야 한다.
 
 }
 
