@@ -45,6 +45,9 @@ private:
 	UPROPERTY(meta = (BindWidget));
 	class UWidget* MainMenu;
 
+	UPROPERTY(meta = (BindWidget));
+	class UEditableTextBox* IpText;
+
 	UFUNCTION()
 	void HostServer();
 
