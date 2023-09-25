@@ -17,13 +17,10 @@ class OMOK_API AOmokPlayerController : public APlayerController
 public:
 	AOmokPlayerController();
 
-	virtual void BeginPlay() override;
+	//virtual void BeginPlay() override;
 
 
 
 protected:
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//TObjectPtr<class UInputMappingContext> IMC;
 	
 };

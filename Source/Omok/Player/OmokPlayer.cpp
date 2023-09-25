@@ -11,24 +11,8 @@ AOmokPlayer::AOmokPlayer()
 	PrimaryActorTick.bCanEverTick = true;
 
 	this->OmokPlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("OmokCamera"));
+	this->OmokPlayerCamera->SetWorldRotation(FRotator(-90.f, 0.f, 0.f));
 	this->OmokPlayerCamera->SetupAttachment(this->RootComponent);
-
-	//static ConstructorHelpers::FObjectFinder<UInputAction> MouseLocationRef(
-	//	TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokMouseLocation.IA_OmokMouseLocation'")
-	//);
-	//ensure(MouseLocationRef.Succeeded());
-	//this->OmokMouseLocation = MouseLocationRef.Object;
-
-	//static ConstructorHelpers::FObjectFinder<UInputAction> MouseClickRef(
-	//	TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokMouseClick.IA_OmokMouseClick'")
-	//);
-	//ensure(MouseClickRef.Succeeded());
-	//this->OmokMouseClick = MouseClickRef.Object;
-
-	
-
-
-
 
 }
 
@@ -46,59 +30,3 @@ void AOmokPlayer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-//// Called to bind functionality to input
-//void AOmokPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-//{
-//	Super::SetupPlayerInputComponent(PlayerInputComponent);
-//
-//	TObjectPtr<UEnhancedInputComponent> EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-//
-//
-//	EnhancedInputComponent->BindAction(
-//		this->OmokMouseLocation,
-//		ETriggerEvent::Triggered,
-//		this,
-//		&AOmokPlayer::RenderPointer
-//	);
-//	
-//	EnhancedInputComponent->BindAction(
-//		this->OmokMouseClick,
-//		ETriggerEvent::Triggered,
-//		this,
-//		&AOmokPlayer::Click
-//	);
-//}
-//
-//void AOmokPlayer::RenderPointer(const FInputActionValue& Input)
-//{
-//	const FVector InputVector = Input.Get<FVector>();
-//
-//	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("X: %f, Y: %f, Z: %f"), InputVector.X, InputVector.Y, InputVector.Z));
-//
-//	
-//	//const FVector Start = this->GetActorLocation();
-//
-//
-//
-//	//FHitResult HitResult;
-//	//
-//	//ActorLineTraceSingle(
-//	//	HitResult,
-//	//
-//	//
-//	//
-//	//);
-//}
-//
-//void AOmokPlayer::Click(const FInputActionValue& Input)
-//{
-//	const FVector2D InputVector = Input.Get<FVector2D>();
-//
-//	GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Blue, TEXT("Click!"));
-//
-//
-//
-//
-//}
-

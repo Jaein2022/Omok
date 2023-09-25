@@ -23,7 +23,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-
+	UPROPERTY(BlueprintReadWrite)
+	float NodeDistance;	//노드간 간격.
 
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
@@ -32,4 +33,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UMaterial> BoardMaterial;
 	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TArray<TObjectPtr<class AOmokNode>> AllNodes;
+
 };
