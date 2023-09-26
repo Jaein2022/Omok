@@ -3,6 +3,7 @@
 
 #include "OmokNode.h"
 #include "../OmokPlayerController.h"
+#include "../OmokGameStateBase.h"
 
 // Sets default values
 AOmokNode::AOmokNode()
@@ -17,38 +18,38 @@ AOmokNode::AOmokNode()
 	this->NodeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("NodeMesh"));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> NodeMeshRef(
-		TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'")
+		TEXT("/Script/Engine.StaticMesh'/Game/Assets/Stone.Stone'")
 	);
 	ensure(NodeMeshRef.Succeeded());
 	NodeMesh->SetStaticMesh(NodeMeshRef.Object);
-	NodeMesh->SetWorldScale3D(FVector(1.f, 1.f, 0.2f));
+	NodeMesh->SetWorldScale3D(FVector(1.f, 1.f, 1.f));
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> BlackMaterialRef(
-		TEXT("/Script/Engine.Material'/Game/NodeMaterial/M_Black.M_Black'")
+		TEXT("/Script/Engine.Material'/Game/Assets/TempNodeMaterial/M_Black.M_Black'")
 	);
 	ensure(BlackMaterialRef.Succeeded());
 	BlackMaterial = BlackMaterialRef.Object;
 	
 	static ConstructorHelpers::FObjectFinder<UMaterial> ClearBlackMaterialRef(
-		TEXT("/Script/Engine.Material'/Game/NodeMaterial/M_ClearBlack.M_ClearBlack'")
+		TEXT("/Script/Engine.Material'/Game/Assets/TempNodeMaterial/M_ClearBlack.M_ClearBlack'")
 	);
 	ensure(ClearBlackMaterialRef.Succeeded());
 	ClearBlackMaterial = ClearBlackMaterialRef.Object;
 	
 	static ConstructorHelpers::FObjectFinder<UMaterial> WhiteMaterialRef(
-		TEXT("/Script/Engine.Material'/Game/NodeMaterial/M_White.M_White'")
+		TEXT("/Script/Engine.Material'/Game/Assets/TempNodeMaterial/M_White.M_White'")
 	);
 	ensure(WhiteMaterialRef.Succeeded());
 	WhiteMaterial = WhiteMaterialRef.Object;
 	
 	static ConstructorHelpers::FObjectFinder<UMaterial> ClearWhiteMaterialRef(
-		TEXT("/Script/Engine.Material'/Game/NodeMaterial/M_ClearWhite.M_ClearWhite'")
+		TEXT("/Script/Engine.Material'/Game/Assets/TempNodeMaterial/M_ClearWhite.M_ClearWhite'")
 	);
 	ensure(ClearWhiteMaterialRef.Succeeded());
 	ClearWhiteMaterial = ClearWhiteMaterialRef.Object;
 	
 	static ConstructorHelpers::FObjectFinder<UMaterial> ClearMaterialRef(
-		TEXT("/Script/Engine.Material'/Game/NodeMaterial/M_Transparent.M_Transparent'")
+		TEXT("/Script/Engine.Material'/Game/Assets/TempNodeMaterial/M_Transparent.M_Transparent'")
 	);
 	ensure(ClearMaterialRef.Succeeded());
 	ClearMaterial = ClearMaterialRef.Object;
@@ -65,6 +66,10 @@ AOmokNode::AOmokNode()
 	ClickDelegate.BindUFunction(this, "ReactOnClick");
 	NodeMesh->OnClicked.Add(ClickDelegate);
 
+	//if(nullptr != GetWorld())
+	//{
+	//	OmokGameState = CastChecked<AOmokGameStateBase>(GetWorld()->GetGameState());
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -72,6 +77,7 @@ void AOmokNode::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	OmokGameState = CastChecked<AOmokGameStateBase>(GetWorld()->GetGameState());
 }
 
 // Called every frame
@@ -162,5 +168,19 @@ void AOmokNode::ReactOnClick()
 	SetNodeColor(ENodeColor::Black);
 
 	IsFixed = true;
+}
+
+void AOmokNode::SetMaterials(const TArray<TObjectPtr<UMaterial>>& NodeMaterials)
+{
+	if(true == NodeMaterials.IsEmpty())
+	{
+		return;
+	}
+
+	this->BlackMaterial = NodeMaterials[0];
+	this->ClearBlackMaterial = NodeMaterials[1];
+	this->WhiteMaterial = NodeMaterials[2];
+	this->ClearWhiteMaterial = NodeMaterials[3];
+	this->ClearMaterial = NodeMaterials[4];
 }
 

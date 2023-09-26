@@ -14,13 +14,25 @@ class OMOK_API AOmokGameStateBase : public AGameStateBase
 {
 	GENERATED_BODY()
 	
-public:
-	AOmokGameStateBase();
 	//GameState Base가 아니라 GameState를 상속받아서 커스텀 GameState를 만들면,
 	// 레벨 블루프린트의 BeginPlay 이벤트가 제대로 호출되지 않는다.
+public:
+	AOmokGameStateBase();
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void CreateOmokBoard(const FVector& BoardLocation);
+	void CreateOmokBoard(
+		const FVector& BoardLocation,
+		UMaterial* InLineMaterial,
+		UMaterial* InBoardMaterial,
+		UMaterial* InNodeBlackMaterial,
+		UMaterial* InNodeClearBlackMaterial,
+		UMaterial* InNodeWhiteMaterial,
+		UMaterial* InNodeClearWhiteMaterial,
+		UMaterial* InNodeClearMaterial
+	);
+
+	//UFUNCTION(Server, Reliable)
+	//void CheckWinningCondition();
 	
 
 protected:
