@@ -17,17 +17,13 @@ class OMOK_API AOmokPlayerController : public APlayerController
 public:
 	AOmokPlayerController();
 
-	//virtual void BeginPlay() override;
-
 	FORCEINLINE void SetIsWhite(const bool InIsWhite) { this->IsWhite = InIsWhite; }
 	FORCEINLINE bool GetIsWhite() const { return IsWhite; }
-
-	//virtual void GameHasEnded(class AActor* EndGameFocus = nullptr, bool bIsWinner = false) override;
-	//virtual void SetPawn(APawn* InPawn) override;
 
 protected:
 	
 
 private:
 	bool IsWhite;
+
 };

@@ -25,8 +25,7 @@ void AOmokGameStateBase::CreateOmokBoard_Implementation(
 	ensure(TEXT("PlayMap") == CurrentMapName);
 	//이 함수는 플레이맵에서만 호출해야하는 함수.
 
-	OmokBoard = GetWorld()->SpawnActor<AOmokBoard>();
-	OmokBoard->SetActorLocation(BoardLocation);
+	OmokBoard = GetWorld()->SpawnActor<AOmokBoard>(BoardLocation, FRotator(0, 0, 0));
 	OmokBoard->SetLineMaterial(InLineMaterial);
 	OmokBoard->SetBoardMaterial(InBoardMaterial);
 	OmokBoard->SetNodeMaterials(

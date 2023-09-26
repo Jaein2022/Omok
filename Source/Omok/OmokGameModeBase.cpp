@@ -36,10 +36,9 @@ AOmokGameModeBase::AOmokGameModeBase()
 	ensure(IMCObjectRef.Succeeded());
 	this->IMC = IMCObjectRef.Object;
 
-
 	//this->OmokBoard = GetWorld()->SpawnActor<AOmokBoard>();
 	//this->OmokBoard->SetActorLocation(FVector(0.f, 0.f, -0.5f));
-	//액터 스폰은 현재 레벨이 있는 상태에서 해야 한다.
+	//액터 스폰은 레벨이 존재하는 상태에서 해야 한다.
 
 }
 
@@ -58,11 +57,15 @@ void AOmokGameModeBase::PostLogin(APlayerController* NewPlayer)
 	Super::PostLogin(NewPlayer);
 
 	ensure(2 >= GetWorld()->GetNumPlayerControllers());
-
-	NewPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()->AddMappingContext(this->IMC, 0);
+	
+	if(true == NewPlayer->IsLocalPlayerController())
+	{
+		NewPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()->AddMappingContext(this->IMC, 0);
+	}
 
 	TObjectPtr<AOmokPlayerController> NewOmokPlayerController = CastChecked<AOmokPlayerController>(NewPlayer);
 
+	
 	if(1 < GetWorld()->GetNumPlayerControllers())
 	{
 		NewOmokPlayerController->SetIsWhite(
