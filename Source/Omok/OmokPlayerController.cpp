@@ -8,6 +8,8 @@ AOmokPlayerController::AOmokPlayerController()
 	bShowMouseCursor = true;
 	bEnableMouseOverEvents = true;
 	bEnableClickEvents = true;
+
+	IsWhite = false;
 }
 
 //void AOmokPlayerController::BeginPlay()
