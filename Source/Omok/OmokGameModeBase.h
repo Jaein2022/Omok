@@ -29,9 +29,10 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<class UInputMappingContext> IMC;
 
+
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	//TObjectPtr<class AOmokBoard> OmokBoard;
-	//액터 스폰은 레벨에서 해야 한다.
+	//액터 스폰은 레벨이 존재하는 상태에서 해야 한다.
 
 
 };

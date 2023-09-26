@@ -46,6 +46,7 @@ public:
 
 	FORCEINLINE ENodeColor GetNodeColor() { return CurrentColor; }
 
+	void SetMaterials(const TArray<TObjectPtr<UMaterial>>& NodeMaterials);
 
 
 protected:
@@ -73,5 +74,8 @@ protected:
 	FScriptDelegate BeginCursorOverlapDelegate;
 	FScriptDelegate EndCursorOverlapDelegate;
 	FScriptDelegate ClickDelegate;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<class AOmokGameStateBase> OmokGameState;
 
 };

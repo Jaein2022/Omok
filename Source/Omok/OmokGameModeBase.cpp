@@ -36,10 +36,9 @@ AOmokGameModeBase::AOmokGameModeBase()
 	ensure(IMCObjectRef.Succeeded());
 	this->IMC = IMCObjectRef.Object;
 
-
 	//this->OmokBoard = GetWorld()->SpawnActor<AOmokBoard>();
 	//this->OmokBoard->SetActorLocation(FVector(0.f, 0.f, -0.5f));
-	//액터 스폰은 현재 레벨이 있는 상태에서 해야 한다.
+	//액터 스폰은 레벨이 존재하는 상태에서 해야 한다.
 
 }
 
@@ -57,5 +56,28 @@ void AOmokGameModeBase::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	NewPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()->AddMappingContext(this->IMC, 0);
+	ensure(2 >= GetWorld()->GetNumPlayerControllers());
+	
+	if(true == NewPlayer->IsLocalPlayerController())
+	{
+		NewPlayer->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()->AddMappingContext(this->IMC, 0);
+	}
+
+	TObjectPtr<AOmokPlayerController> NewOmokPlayerController = CastChecked<AOmokPlayerController>(NewPlayer);
+
+	
+	if(1 < GetWorld()->GetNumPlayerControllers())
+	{
+		NewOmokPlayerController->SetIsWhite(
+			!CastChecked<AOmokPlayerController>(GetWorld()->GetFirstPlayerController())->GetIsWhite()
+		);
+		//두번째 플레이어는 무조건 첫번째 플레이어와 반대 색상을 준다.
+	}
+	else
+	{
+		NewOmokPlayerController->SetIsWhite(FMath::RandBool());
+		//첫번째 플레이어는 랜덤하게 색상을 골라 준다.
+	}
+
+
 }

@@ -17,10 +17,13 @@ class OMOK_API AOmokPlayerController : public APlayerController
 public:
 	AOmokPlayerController();
 
-	//virtual void BeginPlay() override;
-
-
+	FORCEINLINE void SetIsWhite(const bool InIsWhite) { this->IsWhite = InIsWhite; }
+	FORCEINLINE bool GetIsWhite() const { return IsWhite; }
 
 protected:
 	
+
+private:
+	bool IsWhite;
+
 };

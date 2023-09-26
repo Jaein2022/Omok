@@ -23,6 +23,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+	void SetLineMaterial(TObjectPtr<UMaterial> InLineMaterial);
+	void SetBoardMaterial(TObjectPtr<UMaterial> InBoardMaterial);
+	void SetNodeMaterials(
+		TObjectPtr<UMaterial> InBlackMaterial,
+		TObjectPtr<UMaterial> InClearBlackMaterial,
+		TObjectPtr<UMaterial> InWhiteMaterial,
+		TObjectPtr<UMaterial> InClearWhiteMaterial,
+		TObjectPtr<UMaterial> InClearMaterial
+	);
+
+
+
 	UPROPERTY(BlueprintReadWrite)
 	float NodeDistance;	//노드간 간격.
 
@@ -30,10 +43,16 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> BoardMesh;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UMaterial> LineMaterial;
+	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UMaterial> BoardMaterial;
 	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TArray<TObjectPtr<class AOmokNode>> AllNodes;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TArray<TObjectPtr<UMaterial>> NodeMaterials;
 
 };

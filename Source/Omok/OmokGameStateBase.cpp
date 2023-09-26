@@ -8,7 +8,16 @@ AOmokGameStateBase::AOmokGameStateBase()
 {
 }
 
-void AOmokGameStateBase::CreateOmokBoard_Implementation(const FVector& BoardLocation)
+void AOmokGameStateBase::CreateOmokBoard_Implementation(
+	const FVector& BoardLocation,
+	UMaterial* InLineMaterial,
+	UMaterial* InBoardMaterial,
+	UMaterial* InNodeBlackMaterial,
+	UMaterial* InNodeClearBlackMaterial,
+	UMaterial* InNodeWhiteMaterial,
+	UMaterial* InNodeClearWhiteMaterial,
+	UMaterial* InNodeClearMaterial
+)
 {
 	const FString CurrentMapName = GetWorld()->GetMapName().RightChop(GetWorld()->StreamingLevelsPrefix.Len());
 	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, CurrentMapName);
@@ -16,7 +25,15 @@ void AOmokGameStateBase::CreateOmokBoard_Implementation(const FVector& BoardLoca
 	ensure(TEXT("PlayMap") == CurrentMapName);
 	//이 함수는 플레이맵에서만 호출해야하는 함수.
 
-	this->OmokBoard = GetWorld()->SpawnActor<AOmokBoard>();
-	this->OmokBoard->SetActorLocation(BoardLocation);
+	OmokBoard = GetWorld()->SpawnActor<AOmokBoard>(BoardLocation, FRotator(0, 0, 0));
+	OmokBoard->SetLineMaterial(InLineMaterial);
+	OmokBoard->SetBoardMaterial(InBoardMaterial);
+	OmokBoard->SetNodeMaterials(
+		InNodeBlackMaterial,
+		InNodeClearBlackMaterial,
+		InNodeWhiteMaterial,
+		InNodeClearWhiteMaterial,
+		InNodeClearMaterial
+	);
 
 }
