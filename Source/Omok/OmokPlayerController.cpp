@@ -11,8 +11,3 @@ AOmokPlayerController::AOmokPlayerController()
 
 	IsWhite = false;
 }
-
-//void AOmokPlayerController::BeginPlay()
-//{
-//	Super::BeginPlay();
-//}

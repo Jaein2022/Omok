@@ -25,8 +25,6 @@ void UOmokGameInstance::Init()
 	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *MenuClass->GetName());
 }
 
-
-
 void UOmokGameInstance::LoadMenu()
 {
 	if (!ensure(MenuClass != nullptr)) return;
@@ -50,8 +48,9 @@ void UOmokGameInstance::Host()
 	UWorld* World = GetWorld();
 	if (!ensure(World != nullptr)) return;
 
-	World->ServerTravel("/Game/Maps/TestMap?listen");
-
+	//World->ServerTravel("/Game/Maps/TestMap?listen");
+	World->ServerTravel("/Game/Maps/PlayMap?listen");
+	
 }
 
 void UOmokGameInstance::Join(const FString& Address)
