@@ -6,6 +6,16 @@
 #include "GameFramework/GameStateBase.h"
 #include "OmokGameStateBase.generated.h"
 
+UENUM()
+enum class ENodeColor: uint8
+{
+	Black,
+	ClearBlack,
+	White,
+	ClearWhite,
+	Clear
+};
+
 /**
  * 
  */
@@ -31,13 +41,24 @@ public:
 		UMaterial* InNodeClearMaterial
 	);
 
-	//UFUNCTION(Server, Reliable)
-	//void CheckWinningCondition();
-	
+	UFUNCTION(Server, Reliable)
+	void CheckWinningCondition(const class AOmokNode* InCurrentNode);
+
+	FORCEINLINE bool GetIsPlayerColorWhite() const { return IsPlayerColorWhite; }
+
+private:
+	int32 CountNodes(
+		const int32 InXCoordinate,
+		const int32 InYCoordinate,
+		const ENodeColor InColor,
+		const int8 XDirection,
+		const int8 YDirection
+	);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class AOmokBoard> OmokBoard;
 
-
+private:
+	bool IsPlayerColorWhite;	//현재 플레이어 색상. true: 흰색.
 };

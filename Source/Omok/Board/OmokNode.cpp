@@ -66,10 +66,11 @@ AOmokNode::AOmokNode()
 	ClickDelegate.BindUFunction(this, "ReactOnClick");
 	NodeMesh->OnClicked.Add(ClickDelegate);
 
-	//if(nullptr != GetWorld())
-	//{
-	//	OmokGameState = CastChecked<AOmokGameStateBase>(GetWorld()->GetGameState());
-	//}
+	if(nullptr != GetLevel())
+	{
+		OmokGameState = CastChecked<AOmokGameStateBase>(GetWorld()->GetGameState());
+	}
+
 }
 
 // Called when the game starts or when spawned
@@ -77,7 +78,7 @@ void AOmokNode::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	OmokGameState = CastChecked<AOmokGameStateBase>(GetWorld()->GetGameState());
+	//OmokGameState = CastChecked<AOmokGameStateBase>(GetWorld()->GetGameState());
 }
 
 // Called every frame
@@ -128,8 +129,6 @@ void AOmokNode::SetNodeColor(ENodeColor NewColor)
 	default:
 		break;
 	}
-
-
 }
 
 void AOmokNode::ReactOnBeginCursorOverlap()
@@ -141,7 +140,7 @@ void AOmokNode::ReactOnBeginCursorOverlap()
 		return;
 	}
 
-	SetNodeColor(ENodeColor::ClearBlack);
+	SetNodeColor(OmokGameState->GetIsPlayerColorWhite() ? ENodeColor::ClearWhite : ENodeColor::ClearBlack);
 }
 
 void AOmokNode::ReactOnEndCursorOverlap()
@@ -165,9 +164,10 @@ void AOmokNode::ReactOnClick()
 		return;
 	}
 
-	SetNodeColor(ENodeColor::Black);
+	SetNodeColor(OmokGameState->GetIsPlayerColorWhite() ? ENodeColor::White : ENodeColor::Black);
 
 	IsFixed = true;
+	OmokGameState->CheckWinningCondition(this);
 }
 
 void AOmokNode::SetMaterials(const TArray<TObjectPtr<UMaterial>>& NodeMaterials)
@@ -182,5 +182,11 @@ void AOmokNode::SetMaterials(const TArray<TObjectPtr<UMaterial>>& NodeMaterials)
 	this->WhiteMaterial = NodeMaterials[2];
 	this->ClearWhiteMaterial = NodeMaterials[3];
 	this->ClearMaterial = NodeMaterials[4];
+}
+
+void AOmokNode::SetCoordinate(int32 X, int32 Y)
+{
+	Coordinate.X = X;
+	Coordinate.Y = Y;
 }
 
