@@ -34,6 +34,8 @@ public:
 		TObjectPtr<UMaterial> InClearMaterial
 	);
 
+	TObjectPtr<class AOmokNode> GetNode(const int32 X, const int32 Y);
+	TObjectPtr<class AOmokNode> GetNode(const FIntVector2& InCoordinate);
 
 
 	UPROPERTY(BlueprintReadWrite)

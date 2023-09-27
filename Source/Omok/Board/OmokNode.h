@@ -4,17 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "../OmokGameStateBase.h"
 #include "OmokNode.generated.h"
-
-UENUM()
-enum class ENodeColor: uint8
-{
-	Black,
-	ClearBlack,
-	White,
-	ClearWhite,
-	Clear
-};
 
 UCLASS()
 class OMOK_API AOmokNode : public AActor
@@ -44,38 +35,48 @@ public:
 	UFUNCTION()
 	void ReactOnClick();
 
-	FORCEINLINE ENodeColor GetNodeColor() { return CurrentColor; }
+	FORCEINLINE ENodeColor GetNodeColor() const { return CurrentColor; }
 
 	void SetMaterials(const TArray<TObjectPtr<UMaterial>>& NodeMaterials);
 
+	void SetCoordinate(int32 X, int32 Y);
+
+	FORCEINLINE const FIntVector2& GetCoordinate() const { return Coordinate; }
 
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> NodeMesh;
 
+	//검은색.
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UMaterial> BlackMaterial;
+	TObjectPtr<UMaterial> BlackMaterial;	
 	
+	//반투명 검은색.
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UMaterial> ClearBlackMaterial;
+	TObjectPtr<UMaterial> ClearBlackMaterial;	
 
+	//흰색.
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UMaterial> WhiteMaterial;
+	TObjectPtr<UMaterial> WhiteMaterial;	
 	
+	//반투명 흰색.
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UMaterial> ClearWhiteMaterial;
+	TObjectPtr<UMaterial> ClearWhiteMaterial;	
 	
+	//투명(진짜 투명이면 안보여서 실제로는 반투명 파란색).
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UMaterial> ClearMaterial;
+	TObjectPtr<UMaterial> ClearMaterial;	
 
-	ENodeColor CurrentColor;	//현재 색상.
-	bool IsFixed;	//색상 고정 됨/안됨.
+	//게임스테이트.
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<AOmokGameStateBase> OmokGameState;
 
+private:
 	FScriptDelegate BeginCursorOverlapDelegate;
 	FScriptDelegate EndCursorOverlapDelegate;
 	FScriptDelegate ClickDelegate;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<class AOmokGameStateBase> OmokGameState;
-
+	ENodeColor CurrentColor;	//현재 노드 색상.
+	bool IsFixed;	//노드 색상 고정 됨/안됨.
+	FIntVector2 Coordinate;	//노드 좌표. X++이 위, Y++이 오른쪽.
 };

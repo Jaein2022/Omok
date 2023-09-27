@@ -31,7 +31,7 @@ void AOmokBoard::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const FVector2D InitLocation(NodeDistance * 7, -NodeDistance * 7);	//좌상단 노드 위치.
+	const FVector2D InitLocation(-NodeDistance * 7, -NodeDistance * 7);	//우하단 노드 위치.
 	FActorSpawnParameters NodeSpawnParams;
 	NodeSpawnParams.Owner = this;
 	NodeSpawnParams.bNoFail = true;
@@ -49,7 +49,7 @@ void AOmokBoard::BeginPlay()
 
 			TObjectPtr<AOmokNode> NewNode = GetWorld()->SpawnActor<AOmokNode>(
 				FVector(
-					InitLocation.X - (x * NodeDistance) + GetActorLocation().X,
+					InitLocation.X + (x * NodeDistance) + GetActorLocation().X,
 					InitLocation.Y + (y * NodeDistance) + GetActorLocation().Y,
 					30.f
 				),
@@ -58,6 +58,7 @@ void AOmokBoard::BeginPlay()
 			);
 			NewNode->AttachToComponent(this->RootComponent, NodeAttachmentRules);
 			NewNode->SetMaterials(NodeMaterials);
+			NewNode->SetCoordinate(x, y);	
 			NewNode->SetActorLabel(NodeName);
 			//Label: 액터가 언리얼 에디터 뷰포트에 배치되었을때 보이는 이름. Name과 다르다.
 
@@ -101,3 +102,12 @@ void AOmokBoard::SetNodeMaterials(
 	NodeMaterials.Add(ClearMaterial);
 }
 
+TObjectPtr<AOmokNode> AOmokBoard::GetNode(const int32 X, const int32 Y)
+{
+	return AllNodes[X * 15 + Y];
+}
+
+TObjectPtr<class AOmokNode> AOmokBoard::GetNode(const FIntVector2& InCoordinate)
+{
+	return AllNodes[InCoordinate.X * 15 + InCoordinate.Y];	
+}
