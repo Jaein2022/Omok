@@ -8,6 +8,8 @@
 #include "Blueprint/UserWidget.h"
 
 #include "MenuSystem/MainMenu.h"
+#include "MenuSystem/InGameMenu.h"
+#include "MenuSystem/MenuWidget.h"
 
 
 
@@ -17,19 +19,26 @@ UOmokGameInstance::UOmokGameInstance(const FObjectInitializer& ObjectInitializer
 	if (!ensure(MenuBPClass.Class != nullptr)) return;
 	
 	MenuClass = MenuBPClass.Class;
+	
+	ConstructorHelpers::FClassFinder<UUserWidget> InGameMenuBPClass(TEXT("/Game/UI/UI_InGameMenu"));
+	if (!ensure(InGameMenuBPClass.Class != nullptr)) return;
+
+	InGameMenuClass = InGameMenuBPClass.Class;
 }
 
 void UOmokGameInstance::Init()
 {
 	Super::Init();
 	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *MenuClass->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *InGameMenuClass->GetName());
 }
 
 void UOmokGameInstance::LoadMenu()
 {
+
 	if (!ensure(MenuClass != nullptr)) return;
 	
-	UMainMenu* Menu = CreateWidget<UMainMenu>(this, MenuClass);
+	Menu = CreateWidget<UMainMenu>(this, MenuClass);
 	if (!ensure(Menu != nullptr)) return;
 	
 	Menu->Setup();
@@ -38,8 +47,27 @@ void UOmokGameInstance::LoadMenu()
 
 }
 
+void UOmokGameInstance::InGameLoadMenu()
+{
+
+	if (!ensure(InGameMenuClass != nullptr)) return;
+
+	InMenu = CreateWidget<UInGameMenu>(this, InGameMenuClass);
+	if (!ensure(InMenu != nullptr)) return;
+
+	InMenu->Setup();
+
+	InMenu->SetMenuInterface(this);
+
+}
+
 void UOmokGameInstance::Host()
 {
+	if (Menu != nullptr) 
+	{
+		Menu->Teardown();
+	}
+
 	UEngine* Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
 
@@ -55,6 +83,11 @@ void UOmokGameInstance::Host()
 
 void UOmokGameInstance::Join(const FString& Address)
 {
+	if (Menu != nullptr) 
+	{
+		Menu->Teardown();
+	}
+
 	UEngine* Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
 
@@ -64,5 +97,16 @@ void UOmokGameInstance::Join(const FString& Address)
 	if (!ensure(PlayerController != nullptr)) return;
 
 	PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
+
+}
+
+void UOmokGameInstance::LoadMainMenu()
+{
+
+	APlayerController* PlayerController = GetFirstLocalPlayerController();
+	if (!ensure(PlayerController != nullptr)) return;
+
+	PlayerController->ClientTravel("/Game/Maps/Lobby", ETravelType::TRAVEL_Absolute);
+
 
 }
