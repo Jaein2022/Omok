@@ -3,23 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "MenuInterface.h"
+#include "MenuWidget.h"
 #include "MainMenu.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class OMOK_API UMainMenu : public UUserWidget
+class OMOK_API UMainMenu : public UMenuWidget
 {
 	GENERATED_BODY()
 	
-public:
-	void SetMenuInterface(IMenuInterface* MenuInterface);
-
-	void Setup();
-
 protected:
 	virtual bool Initialize();
 
@@ -35,6 +29,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget));
 	class UButton* Back;
+
+	UPROPERTY(meta = (BindWidget));
+	class UButton* Quit;
 
 	UPROPERTY(meta = (BindWidget));
 	class UWidgetSwitcher* MenuSwitcher;
@@ -60,7 +57,7 @@ private:
 	UFUNCTION()
 	void OpenMainMenu();
 
-	IMenuInterface* MenuInterface;
-
+	UFUNCTION()
+	void QuitPressed();
 };
 
