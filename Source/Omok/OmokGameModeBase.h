@@ -22,7 +22,7 @@ public:
 
 	virtual void Tick(float DeltaSecond) override;
 
-	virtual void PostLogin(APlayerController* NewPlayer) override;
+	//virtual void PostLogin(APlayerController* NewPlayer) override;
 
 
 protected:

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../OmokGameStateBase.h"
+#include "OmokBoard.h"
 #include "OmokNode.generated.h"
 
 UCLASS()
@@ -27,17 +27,15 @@ public:
 	void SetNodeColor(ENodeColor NewColor);
 
 	UFUNCTION()
-	void ReactOnBeginCursorOverlap();
+	void OnBeginCursorOverlap();
 	
 	UFUNCTION()
-	void ReactOnEndCursorOverlap();
+	void OnEndCursorOverlap();
 
 	UFUNCTION()
-	void ReactOnClick();
+	void OnClick();
 
 	FORCEINLINE ENodeColor GetNodeColor() const { return CurrentColor; }
-
-	void SetMaterials(const TArray<TObjectPtr<UMaterial>>& NodeMaterials);
 
 	void SetCoordinate(int32 X, int32 Y);
 
@@ -47,36 +45,36 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> NodeMesh;
 
-	//검은색.
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UMaterial> BlackMaterial;	
 	
-	//반투명 검은색.
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UMaterial> ClearBlackMaterial;	
 
-	//흰색.
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UMaterial> WhiteMaterial;	
 	
-	//반투명 흰색.
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UMaterial> ClearWhiteMaterial;	
 	
-	//투명(진짜 투명이면 안보여서 실제로는 반투명 파란색).
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UMaterial> ClearMaterial;	
+	TObjectPtr<UMaterial> TransparentMaterial;	
+	//진짜 투명이면 안보여서 지금은 반투명 파란색.
 
-	//게임스테이트.
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<AOmokGameStateBase> OmokGameState;
+	////게임스테이트.
+	//UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	//TObjectPtr<class AOmokGameStateBase> OmokGameState;
 
 private:
+
+	TObjectPtr<AOmokBoard> Board;
+
 	FScriptDelegate BeginCursorOverlapDelegate;
 	FScriptDelegate EndCursorOverlapDelegate;
 	FScriptDelegate ClickDelegate;
 
 	ENodeColor CurrentColor;	//현재 노드 색상.
-	bool IsFixed;	//노드 색상 고정 됨/안됨.
 	FIntVector2 Coordinate;	//노드 좌표. X++이 위, Y++이 오른쪽.
+
+	bool IsFixed;	//노드 색상 고정 됨/안됨.
 };

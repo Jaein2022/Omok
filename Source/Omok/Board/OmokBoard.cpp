@@ -13,17 +13,30 @@ AOmokBoard::AOmokBoard()
 
 	NodeDistance = 235.f;
 
-
-	this->BoardMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoardMesh"));
+	BoardMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoardMesh"));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoardMeshRef(
-		TEXT("/Script/Engine.StaticMesh'/Game/Assets/BoardA.BoardA'")
+		TEXT("/Script/Engine.StaticMesh'/Game/Assets/BoardMesh.BoardMesh'")
 	);
 	ensure(BoardMeshRef.Succeeded());
-	ensure(this->BoardMesh->SetStaticMesh(BoardMeshRef.Object));
+	ensure(BoardMesh->SetStaticMesh(BoardMeshRef.Object));
 
-	this->BoardMesh->SetupAttachment(this->RootComponent);
-	this->BoardMesh->SetRelativeScale3D(FVector(19.f, 19.f, 1.f));
+	RootComponent = BoardMesh;
+	//BoardMesh->SetupAttachment(this->RootComponent);
+	BoardMesh->SetRelativeScale3D(FVector(19.f, 19.f, 1.f));
+
+	static ConstructorHelpers::FObjectFinder<UMaterial> LineMaterialRef(
+		TEXT("/Script/Engine.Material'/Game/Assets/Materials/Line.Line'")
+	);
+	ensure(LineMaterialRef.Succeeded());
+	BoardMesh->SetMaterial(0, LineMaterialRef.Object);
+
+	static ConstructorHelpers::FObjectFinder<UMaterial> BoardMaterialRef(
+		TEXT("/Script/Engine.Material'/Game/Assets/Materials/Board.Board'")
+	);
+	ensure(BoardMaterialRef.Succeeded());
+	BoardMesh->SetMaterial(1, BoardMaterialRef.Object);
+
 }
 
 // Called when the game starts or when spawned
@@ -31,7 +44,19 @@ void AOmokBoard::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const FVector2D InitLocation(-NodeDistance * 7, -NodeDistance * 7);	//우하단 노드 위치.
+	CreateAllNodes();
+}
+
+// Called every frame
+void AOmokBoard::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+void AOmokBoard::CreateAllNodes()
+{
+	const FVector2D InitLocation(-NodeDistance * 7, -NodeDistance * 7);	//좌하단 노드 위치.
 	FActorSpawnParameters NodeSpawnParams;
 	NodeSpawnParams.Owner = this;
 	NodeSpawnParams.bNoFail = true;
@@ -57,8 +82,7 @@ void AOmokBoard::BeginPlay()
 				NodeSpawnParams
 			);
 			NewNode->AttachToComponent(this->RootComponent, NodeAttachmentRules);
-			NewNode->SetMaterials(NodeMaterials);
-			NewNode->SetCoordinate(x, y);	
+			NewNode->SetCoordinate(x, y);
 			NewNode->SetActorLabel(NodeName);
 			//Label: 액터가 언리얼 에디터 뷰포트에 배치되었을때 보이는 이름. Name과 다르다.
 
@@ -67,47 +91,72 @@ void AOmokBoard::BeginPlay()
 	}
 }
 
-// Called every frame
-void AOmokBoard::Tick(float DeltaTime)
+bool AOmokBoard::CheckWinningCondition(const TObjectPtr<AOmokNode> Node)
 {
-	Super::Tick(DeltaTime);
+	ensure(IsValid(Node));
 
+	const int32 X = Node->GetCoordinate().X;
+	const int32 Y = Node->GetCoordinate().Y;
+	const ENodeColor Color = Node->GetNodeColor();
+
+	//이번 돌에서 연결되는 직선들 중 가장 긴 것의 길이.
+	const int32 LineLength = 1 + FMath::Max(
+		TArray<int32>({
+			CountNodes(X, Y + 1, Color, 0, 1) + CountNodes(X, Y - 1, Color, 0, -1),
+			//수평 체크.
+
+			CountNodes(X + 1, Y, Color, 1, 0) + CountNodes(X - 1, Y, Color, -1, 0),
+			//수직 체크.
+
+			CountNodes(X + 1, Y + 1, Color, 1, 1) + CountNodes(X - 1, Y - 1, Color, -1, -1),
+			//사선 / 체크.
+
+			CountNodes(X + 1, Y - 1, Color, 1, -1) + CountNodes(X - 1, Y + 1, Color, -1, 1)
+			//사선 \ 체크.
+		})
+	);
+
+	//같은색 돌이 5개 이상 연속되면 승리 처리.
+	return (5 <= LineLength) ? true : false;
 }
 
-void AOmokBoard::SetLineMaterial(TObjectPtr<UMaterial> InLineMaterial)
+int32 AOmokBoard::CountNodes(
+	const int32 X,
+	const int32 Y,
+	const ENodeColor Color,
+	const int8 XDir,
+	const int8 YDir
+) const
 {
-	this->LineMaterial = InLineMaterial;
-	this->BoardMesh->SetMaterial(0, this->LineMaterial);
-}
+	ensure(1 >= FMath::Abs(XDir));
+	ensure(1 >= FMath::Abs(YDir));
+	//XDir, YDir은 -1, 0, 1만 허용.
 
-void AOmokBoard::SetBoardMaterial(TObjectPtr<UMaterial> InBoardMaterial)
-{
-	this->BoardMaterial = InBoardMaterial;
-	this->BoardMesh->SetMaterial(1, this->BoardMaterial);
-}
+	ensure(Color == ENodeColor::Black || Color == ENodeColor::White);
+	//Color는 Black과 White만 허용.
 
-void AOmokBoard::SetNodeMaterials(
-	TObjectPtr<UMaterial> BlackMaterial,
-	TObjectPtr<UMaterial> ClearBlackMaterial,
-	TObjectPtr<UMaterial> WhiteMaterial,
-	TObjectPtr<UMaterial> ClearWhiteMaterial,
-	TObjectPtr<UMaterial> ClearMaterial
-)
-{
-	NodeMaterials.Reserve(5);
-	NodeMaterials.Add(BlackMaterial);
-	NodeMaterials.Add(ClearBlackMaterial);
-	NodeMaterials.Add(WhiteMaterial);
-	NodeMaterials.Add(ClearWhiteMaterial);
-	NodeMaterials.Add(ClearMaterial);
-}
+	if(0 > X || 15 <= X || 0 > Y || 15 <= Y)
+	{
+		return 0;
+	}
 
-TObjectPtr<AOmokNode> AOmokBoard::GetNode(const int32 X, const int32 Y)
-{
-	return AllNodes[X * 15 + Y];
-}
+	int32 CoordX = X;
+	int32 CoordY = Y;
+	int32 Length = 0;
 
-TObjectPtr<class AOmokNode> AOmokBoard::GetNode(const FIntVector2& InCoordinate)
-{
-	return AllNodes[InCoordinate.X * 15 + InCoordinate.Y];	
+	while(GetNode(CoordX, CoordY)->GetNodeColor() == Color)
+	{
+		Length++;
+
+		CoordX += XDir;
+		CoordY += YDir;
+
+		if(0 > CoordX || 15 <= CoordX || 0 > CoordY || 15 <= CoordY)
+		{
+			break;
+			//판을 벗어나면 종료.
+		}
+	}
+
+	return Length;
 }
