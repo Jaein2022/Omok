@@ -2,8 +2,6 @@
 
 
 #include "OmokNode.h"
-#include "../OmokPlayerController.h"
-#include "../OmokGameStateBase.h"
 
 // Sets default values
 AOmokNode::AOmokNode()
@@ -48,28 +46,23 @@ AOmokNode::AOmokNode()
 	ensure(ClearWhiteMaterialRef.Succeeded());
 	ClearWhiteMaterial = ClearWhiteMaterialRef.Object;
 	
-	static ConstructorHelpers::FObjectFinder<UMaterial> ClearMaterialRef(
+	static ConstructorHelpers::FObjectFinder<UMaterial> TransparentMaterialRef(
 		TEXT("/Script/Engine.Material'/Game/Assets/TempNodeMaterial/M_Transparent.M_Transparent'")
 	);
-	ensure(ClearMaterialRef.Succeeded());
-	ClearMaterial = ClearMaterialRef.Object;
+	ensure(TransparentMaterialRef.Succeeded());
+	TransparentMaterial = TransparentMaterialRef.Object;
 
-	SetNodeColor(ENodeColor::Clear);
+	SetNodeColor(ENodeColor::Transparent);
 
 
-	BeginCursorOverlapDelegate.BindUFunction(this, "ReactOnBeginCursorOverlap");
+	BeginCursorOverlapDelegate.BindUFunction(this, "OnBeginCursorOverlap");
 	NodeMesh->OnBeginCursorOver.Add(BeginCursorOverlapDelegate);
 	
-	EndCursorOverlapDelegate.BindUFunction(this, "ReactOnEndCursorOverlap");
+	EndCursorOverlapDelegate.BindUFunction(this, "OnEndCursorOverlap");
 	NodeMesh->OnEndCursorOver.Add(EndCursorOverlapDelegate);
 	
-	ClickDelegate.BindUFunction(this, "ReactOnClick");
+	ClickDelegate.BindUFunction(this, "OnClick");
 	NodeMesh->OnClicked.Add(ClickDelegate);
-
-	if(nullptr != GetLevel())
-	{
-		OmokGameState = CastChecked<AOmokGameStateBase>(GetWorld()->GetGameState());
-	}
 
 }
 
@@ -120,18 +113,25 @@ void AOmokNode::SetNodeColor(ENodeColor NewColor)
 		break;
 	}
 
-	case ENodeColor::Clear:
+	case ENodeColor::Transparent:
 	{
-		NodeMesh->SetMaterial(0, ClearMaterial);
+		NodeMesh->SetMaterial(0, TransparentMaterial);
+		break;
+	}
+
+	case ENodeColor::Invalid:
+	{
+		check(false);
 		break;
 	}
 
 	default:
+		check(false);
 		break;
 	}
 }
 
-void AOmokNode::ReactOnBeginCursorOverlap()
+void AOmokNode::OnBeginCursorOverlap()
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("OverlapBegin!"));
 
@@ -140,10 +140,11 @@ void AOmokNode::ReactOnBeginCursorOverlap()
 		return;
 	}
 
-	SetNodeColor(OmokGameState->GetIsPlayerColorWhite() ? ENodeColor::ClearWhite : ENodeColor::ClearBlack);
+	//SetNodeColor(OmokGameState->GetIsPlayerColorWhite() ? ENodeColor::ClearWhite : ENodeColor::ClearBlack);
+	SetNodeColor(ENodeColor::ClearBlack);
 }
 
-void AOmokNode::ReactOnEndCursorOverlap()
+void AOmokNode::OnEndCursorOverlap()
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("OverlapEnd!"));
 
@@ -152,10 +153,10 @@ void AOmokNode::ReactOnEndCursorOverlap()
 		return;
 	}
 
-	SetNodeColor(ENodeColor::Clear);
+	SetNodeColor(ENodeColor::Transparent);
 }
 
-void AOmokNode::ReactOnClick()
+void AOmokNode::OnClick()
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("Click!"));
 
@@ -164,24 +165,12 @@ void AOmokNode::ReactOnClick()
 		return;
 	}
 
-	SetNodeColor(OmokGameState->GetIsPlayerColorWhite() ? ENodeColor::White : ENodeColor::Black);
+	//SetNodeColor(OmokGameState->GetIsPlayerColorWhite() ? ENodeColor::White : ENodeColor::Black);
+	SetNodeColor(ENodeColor::Black);
 
 	IsFixed = true;
-	OmokGameState->CheckWinningCondition(this);
-}
-
-void AOmokNode::SetMaterials(const TArray<TObjectPtr<UMaterial>>& NodeMaterials)
-{
-	if(true == NodeMaterials.IsEmpty())
-	{
-		return;
-	}
-
-	this->BlackMaterial = NodeMaterials[0];
-	this->ClearBlackMaterial = NodeMaterials[1];
-	this->WhiteMaterial = NodeMaterials[2];
-	this->ClearWhiteMaterial = NodeMaterials[3];
-	this->ClearMaterial = NodeMaterials[4];
+	//OmokGameState->CheckWinningCondition(this);
+	Board->CheckWinningCondition(this);
 }
 
 void AOmokNode::SetCoordinate(int32 X, int32 Y)

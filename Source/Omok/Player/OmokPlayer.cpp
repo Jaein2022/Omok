@@ -3,6 +3,7 @@
 
 #include "OmokPlayer.h"
 #include "Camera/CameraComponent.h"
+#include "EnhancedInputComponent.h"
 
 // Sets default values
 AOmokPlayer::AOmokPlayer()
@@ -14,6 +15,17 @@ AOmokPlayer::AOmokPlayer()
 	this->OmokPlayerCamera->SetWorldRotation(FRotator(-90.f, 0.f, 0.f));
 	this->OmokPlayerCamera->SetupAttachment(this->RootComponent);
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> OmokCheckMouseLocationRef(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokCheckMouseLocation.IA_OmokCheckMouseLocation'")
+	);
+	ensure(OmokCheckMouseLocationRef.Succeeded());
+	OmokCheckMouseLocation = OmokCheckMouseLocationRef.Object;
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> OmokMouseClickRef(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokMouseClick.IA_OmokMouseClick'")
+	);
+	ensure(OmokMouseClickRef.Succeeded());
+	OmokMouseClick = OmokMouseClickRef.Object;
 }
 
 // Called when the game starts or when spawned
@@ -29,4 +41,14 @@ void AOmokPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AOmokPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+
+	//InputComponent->BindAction(OmokCheckMouseLocation, ETriggerEvent::Ongoing, this, );
+	//InputComponent->BindAction(OmokMouseClick, ETriggerEvent::Triggered, this, );
 }

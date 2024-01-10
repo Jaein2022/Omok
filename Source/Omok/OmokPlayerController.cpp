@@ -9,5 +9,5 @@ AOmokPlayerController::AOmokPlayerController()
 	bEnableMouseOverEvents = true;
 	bEnableClickEvents = true;
 
-	IsWhite = false;
+	bWhite = false;
 }
