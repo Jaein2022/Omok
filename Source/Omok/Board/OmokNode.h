@@ -33,7 +33,7 @@ public:
 	void OnEndCursorOverlap();
 
 	UFUNCTION()
-	void OnClick();
+	void OnClicked();
 
 	FORCEINLINE ENodeColor GetNodeColor() const { return CurrentColor; }
 

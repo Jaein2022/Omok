@@ -15,22 +15,23 @@
 
 UOmokGameInstance::UOmokGameInstance(const FObjectInitializer& ObjectInitializer)
 {
-	ConstructorHelpers::FClassFinder<UUserWidget> MenuBPClass(TEXT("/Game/UI/UI_Lobby"));
-	if (!ensure(MenuBPClass.Class != nullptr)) return;
-	
-	MenuClass = MenuBPClass.Class;
-	
-	ConstructorHelpers::FClassFinder<UUserWidget> InGameMenuBPClass(TEXT("/Game/UI/UI_InGameMenu"));
-	if (!ensure(InGameMenuBPClass.Class != nullptr)) return;
+	//ConstructorHelpers::FClassFinder<UUserWidget> MenuBPClass(TEXT("/Game/UI/UI_Lobby"));
+	//if (!ensure(MenuBPClass.Class != nullptr)) return;
+	//
+	//MenuClass = MenuBPClass.Class;
+	//
+	//ConstructorHelpers::FClassFinder<UUserWidget> InGameMenuBPClass(TEXT("/Game/UI/UI_InGameMenu"));
+	//if (!ensure(InGameMenuBPClass.Class != nullptr)) return;
 
-	InGameMenuClass = InGameMenuBPClass.Class;
+	//InGameMenuClass = InGameMenuBPClass.Class;
 }
 
 void UOmokGameInstance::Init()
 {
 	Super::Init();
-	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *MenuClass->GetName());
-	UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *InGameMenuClass->GetName());
+
+	//UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *MenuClass->GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("Found class %s"), *InGameMenuClass->GetName());
 }
 
 void UOmokGameInstance::LoadMenu()

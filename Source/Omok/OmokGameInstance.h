@@ -19,7 +19,7 @@ class OMOK_API UOmokGameInstance : public UGameInstance, public IMenuInterface
 public:
 	UOmokGameInstance(const FObjectInitializer& ObjectInitializer);
 
-	virtual void Init();
+	virtual void Init() override;
 
 	UFUNCTION(BlueprintCallable)
 	void LoadMenu();
@@ -34,6 +34,11 @@ public:
 	void Join(const FString& Address) override;
 
 	virtual void LoadMainMenu() override;
+
+
+public:
+	//void Open();
+
 
 
 private:

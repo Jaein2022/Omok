@@ -18,15 +18,14 @@ class OMOK_API AOmokGameModeBase : public AGameModeBase
 public:
 	AOmokGameModeBase();
 
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSecond) override;
 
-	//virtual void PostLogin(APlayerController* NewPlayer) override;
 
 
-protected:
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Input)
-	TObjectPtr<class UInputMappingContext> IMC;
 
 };
