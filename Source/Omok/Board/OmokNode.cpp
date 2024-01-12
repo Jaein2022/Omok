@@ -54,14 +54,13 @@ AOmokNode::AOmokNode()
 
 	SetNodeColor(ENodeColor::Transparent);
 
-
-	BeginCursorOverlapDelegate.BindUFunction(this, "OnBeginCursorOverlap");
+	BeginCursorOverlapDelegate.BindUFunction(this, GET_FUNCTION_NAME_STRING_CHECKED(AOmokNode, OnBeginCursorOverlap));
 	NodeMesh->OnBeginCursorOver.Add(BeginCursorOverlapDelegate);
 	
-	EndCursorOverlapDelegate.BindUFunction(this, "OnEndCursorOverlap");
+	EndCursorOverlapDelegate.BindUFunction(this, GET_FUNCTION_NAME_STRING_CHECKED(AOmokNode, OnEndCursorOverlap));
 	NodeMesh->OnEndCursorOver.Add(EndCursorOverlapDelegate);
 	
-	ClickDelegate.BindUFunction(this, "OnClick");
+	ClickDelegate.BindUFunction(this, GET_FUNCTION_NAME_STRING_CHECKED(AOmokNode, OnClicked));
 	NodeMesh->OnClicked.Add(ClickDelegate);
 
 }
@@ -156,7 +155,7 @@ void AOmokNode::OnEndCursorOverlap()
 	SetNodeColor(ENodeColor::Transparent);
 }
 
-void AOmokNode::OnClick()
+void AOmokNode::OnClicked()
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Green, TEXT("Click!"));
 
