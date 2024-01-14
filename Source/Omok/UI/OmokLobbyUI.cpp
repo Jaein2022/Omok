@@ -7,70 +7,72 @@
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
-#include "../Player/OmokPlayerController.h"
+
+bool UOmokLobbyUI::bRetunedFromHost = false;
 
 UOmokLobbyUI::UOmokLobbyUI(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {	
 }
 
+void UOmokLobbyUI::SetIsEnabled(bool bInIsEnabled)
+{
+	Super::SetIsEnabled(bInIsEnabled);
+
+	if(false == bInIsEnabled)
+	{
+		return;
+	}
+
+	if(bRetunedFromHost)
+	{
+		MenuSwitcher->SetActiveWidget(JoinMenu);
+		bRetunedFromHost = false;
+	}
+}
+
+const FString& UOmokLobbyUI::GetIPAddress() const
+{
+	return IPAddressBox->GetText().ToString();
+}
+
 void UOmokLobbyUI::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
-	OwningPlayerController = CastChecked<AOmokPlayerController>(GetOwningPlayer());
 
 	ensure(MenuSwitcher);
 
 	ensure(MainMenu);
 
 	ensure(HostButton);
-	HostButton->OnClicked.AddDynamic(this, &UOmokLobbyUI::OnClickedHostButton);
 
 	ensure(JoinButton);
 	JoinButton->OnClicked.AddDynamic(this, &UOmokLobbyUI::OnClickedJoinButton);
 
 	ensure(QuitButton);
-	QuitButton->OnClicked.AddDynamic(this, &UOmokLobbyUI::OnClickedQuitButton);
 
 	
 	
 	ensure(JoinMenu);
 
-	ensure(IPAddress);
+	ensure(IPAddressBox);
 
 	ensure(EnterButton);
-	EnterButton->OnClicked.AddDynamic(this, &UOmokLobbyUI::OnClickedEnterButton);
 
 	ensure(BackButton);
 	BackButton->OnClicked.AddDynamic(this, &UOmokLobbyUI::OnClickedBackButton);
 
-	
-	
-	//ensure(ReadyMenu);
 
-	//ensure(ReadyButton);
-	//ReadyButton->OnClicked.AddDynamic(this, &UOmokLobbyUI::OnClickedReadyButton);
+	if(ENetMode::NM_Client == GetWorld()->GetNetMode())
+	{
+		bRetunedFromHost = true;
+	}
 
-	//ensure(ReadyButtonTextBlock);
+	//GetGameInstance()->OnNotifyPreClientTravel().AddUObject(this, &UOmokLobbyUI::OnDisconnected);
+	//GEngine->OnNetworkFailure().AddUObject(this, &UOmokLobbyUI::OnFailedToJoin);
+	//FGameDelegates::Get().GetHandleDisconnectDelegate().AddUObject(this, &UOmokLobbyUI::OnFailedToJoin);
 
-	//FTextFlickeringTimerDelegate.BindUFunction(
-	//	this,
-	//	GET_FUNCTION_NAME_CHECKED(UOmokLobbyUI, FlickerReadyButtonText)
-	//);
-
-	//TextFlickeringTimerHandle.Invalidate();
-
-	//bFlickeringSwitch = true;
-
-	//ensure(CancelButton);
-	//CancelButton->OnClicked.AddDynamic(this, &UOmokLobbyUI::OnClickedCancelButton);
 
 	
-}
-
-void UOmokLobbyUI::OnClickedHostButton()
-{
-	OwningPlayerController->StartHosting();
 }
 
 void UOmokLobbyUI::OnClickedJoinButton()
@@ -78,39 +80,18 @@ void UOmokLobbyUI::OnClickedJoinButton()
 	MenuSwitcher->SetActiveWidget(JoinMenu);
 }
 
-void UOmokLobbyUI::OnClickedQuitButton() 
-{
-	OwningPlayerController->QuitGame();
-}
-
-void UOmokLobbyUI::OnClickedEnterButton()
-{
-	if(IPAddress->GetText().IsEmpty())
-	{
-		ensureMsgf(false, TEXT("%s"), TEXT("IP address must not be empty."));
-		return;
-	}
-
-	OwningPlayerController->ConnectToIPAddress(IPAddress->GetText());
-}
-
 void UOmokLobbyUI::OnClickedBackButton()
 {
 	MenuSwitcher->SetActiveWidget(MainMenu);
 }
 
-//void UOmokLobbyUI::OnClickedReadyButton()
+//void UOmokLobbyUI::OnFailedToJoin(class UWorld* World, class UNetDriver* NetDriver)
 //{
+//	int32 temp = 0;
 //}
-//
+
 //void UOmokLobbyUI::FlickerReadyButtonText()
 //{
 //	ReadyButtonTextBlock->SetOpacity(bFlickeringSwitch ? 1.f : 0.f);
 //	bFlickeringSwitch = bFlickeringSwitch ? false : true;
-//}
-//
-//void UOmokLobbyUI::OnClickedCancelButton()
-//{
-//	TextFlickeringTimerHandle.Invalidate();
-//	MenuSwitcher->SetActiveWidget(JoinMenu);
 //}

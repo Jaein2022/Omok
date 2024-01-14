@@ -15,19 +15,12 @@ AOmokGameModeBase::AOmokGameModeBase()
 	DefaultPawnClass = AOmokPlayer::StaticClass();
 	PlayerControllerClass = AOmokPlayerController::StaticClass();
 	GameStateClass = AOmokGameStateBase::StaticClass();
+	//bUseSeamlessTravel = true;
 }
 
 void AOmokGameModeBase::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-
-	if(ENetMode::NM_Standalone == NewPlayer->GetNetMode())
-	{
-		return;
-	}
-
-	AOmokPlayerController* NewOmokPLayer = CastChecked<AOmokPlayerController>(NewPlayer);
-
 }
 
 void AOmokGameModeBase::BeginPlay()

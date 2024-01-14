@@ -16,10 +16,17 @@ class OMOK_API UOmokLobbyUI : public UUserWidget
 	
 	//로비 UI 클래스.
 
-	friend class AOmokPlayerController;
-
 public:
 	UOmokLobbyUI(const FObjectInitializer& ObjectInitializer);
+
+	virtual void SetIsEnabled(bool bInIsEnabled) override;
+
+	const FString& GetIPAddress() const;
+
+	FORCEINLINE const TObjectPtr<class UButton> GetHostButton() const { return HostButton; }
+	FORCEINLINE const TObjectPtr<class UButton> GetQuitButton() const { return QuitButton; }
+	FORCEINLINE const TObjectPtr<class UButton> GetEnterButton() const { return EnterButton; }
+	FORCEINLINE const TObjectPtr<class UButton> GetBackButton() const { return BackButton; }
 
 
 protected:
@@ -28,34 +35,19 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnClickedHostButton();
-
-	UFUNCTION()
 	void OnClickedJoinButton();
-
-	UFUNCTION()
-	void OnClickedQuitButton();
-
-	UFUNCTION()
-	void OnClickedEnterButton();
 	
 	UFUNCTION()
 	void OnClickedBackButton();
 
 	//UFUNCTION()
-	//void OnClickedReadyButton();
-
-	//UFUNCTION()
-	//void OnClickedCancelButton();
+	//void OnFailedToJoin(class UWorld* World, class UNetDriver* NetDriver);
 
 
 private:
 	//UFUNCTION()
 	//void FlickerReadyButtonText();
 
-
-private:
-	TObjectPtr<class AOmokPlayerController> OwningPlayerController;
 
 
 private:
@@ -80,7 +72,7 @@ private:
 	TObjectPtr<class UVerticalBox> JoinMenu;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UEditableTextBox> IPAddress;
+	TObjectPtr<class UEditableTextBox> IPAddressBox;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> EnterButton;
@@ -89,22 +81,8 @@ private:
 	TObjectPtr<class UButton> BackButton;
 
 
-//private:
-//	UPROPERTY(meta = (BindWidget))
-//	TObjectPtr<class UVerticalBox> ReadyMenu;
-//
-//	UPROPERTY(meta = (BindWidget))
-//	TObjectPtr<class UButton> ReadyButton;
-//
-//	UPROPERTY(meta = (BindWidget))
-//	TObjectPtr<class UTextBlock> ReadyButtonTextBlock;
-//
-//	FTimerHandle TextFlickeringTimerHandle;
-//
-//	FTimerDelegate FTextFlickeringTimerDelegate;
-//
-//	bool bFlickeringSwitch;
-//
-//	UPROPERTY(meta = (BindWidget))
-//	TObjectPtr<class UButton> CancelButton;
+
+private:
+	//true: 클라이언트 PC가 HostingLevel에서 접속을 끊고 돌아왔음. 그래서 MainMenu가 아니라 JoinMenu를 보여줘야 함.
+	static bool bRetunedFromHost;	
 };
