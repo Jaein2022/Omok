@@ -2,10 +2,9 @@
 
 
 #include "OmokPlayerController.h"
-#include "Blueprint/UserWidget.h"
 #include "../UI/OmokLobbyUI.h"
 #include "../UI/OmokHostingUI.h"
-#include "Kismet/GameplayStatics.h"
+#include "Components/Button.h"
 
 AOmokPlayerController::AOmokPlayerController()
 {
@@ -36,12 +35,18 @@ void AOmokPlayerController::BeginPlay()
 	{
 		return;
 	}
-
+	
 	LobbyUI = CastChecked<UOmokLobbyUI>(CreateWidget(this, LobbyUIClass));
+	LobbyUI->GetHostButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::StartHosting);
+	LobbyUI->GetQuitButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::QuitGame);
+	LobbyUI->GetEnterButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::ConnectToIPAddress);
+	LobbyUI->GetBackButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::Disconnect);
 	LobbyUI->AddToViewport();
-	HostingUI = CastChecked<UOmokHostingUI>(CreateWidget(this, HostingUIClass));
-	HostingUI->AddToViewport();
 
+	HostingUI = CastChecked<UOmokHostingUI>(CreateWidget(this, HostingUIClass));
+	HostingUI->GetCancelButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::CancelHosting);
+	HostingUI->AddToViewport();
+	
 	const FString CurrentWorldName = GetWorld()->GetName();
 	if(CurrentWorldName == TEXT("Lobby"))
 	{
@@ -58,13 +63,18 @@ void AOmokPlayerController::BeginPlay()
 
 		HostingUI->SetIsEnabled(true);
 		HostingUI->SetVisibility(ESlateVisibility::Visible);
+		
+		if(ENetMode::NM_Client == GetWorld()->GetNetMode())
+		{
+			//접속한 클라이언트는 대기할 필요 없이 바로 Ready버튼 누를 수 있게 한다.
+			HostingUI->SetJoined();
+		}
 	}
-	
 }
 
-void AOmokPlayerController::StartHosting() const
+void AOmokPlayerController::StartHosting()
 {
-	ensure(GetWorld()->ServerTravel(TEXT("/Game/Maps/HostingLevel?Listen")));
+	ensure(GetWorld()->ServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true));
 }
 
 void AOmokPlayerController::CancelHosting() 
@@ -72,14 +82,17 @@ void AOmokPlayerController::CancelHosting()
 	ClientTravel(TEXT("/Game/Maps/Lobby"), ETravelType::TRAVEL_Absolute);
 }
 
-void AOmokPlayerController::ConnectToIPAddress(const FText& IPAddress)
+void AOmokPlayerController::ConnectToIPAddress()
 {
-	ClientTravel(IPAddress.ToString(), ETravelType::TRAVEL_Absolute);
+	const FString IPAddress = LobbyUI->GetIPAddress();
+	ensureMsgf(false == IPAddress.IsEmpty(), TEXT("%s"), TEXT("IP address must not be empty."));
+	
+	ClientTravel(IPAddress, ETravelType::TRAVEL_Absolute);
 }
 
 void AOmokPlayerController::Disconnect()
 {
-	ClientTravel(TEXT("/Game/Maps/Lobby"), ETravelType::TRAVEL_Absolute);
+	ClientTravel(TEXT("/Game/Maps/Lobby?closed"), ETravelType::TRAVEL_Absolute);
 }
 
 void AOmokPlayerController::QuitGame()

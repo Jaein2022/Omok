@@ -7,12 +7,13 @@
 #include "MenuSystem/MenuInterface.h"
 #include "OmokGameInstance.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWorldChangedDelegate, UWorld* /*OldWorld*/, UWorld* /*NewWorld*/);
 
 /**
  * 
  */
 UCLASS()
-class OMOK_API UOmokGameInstance : public UGameInstance, public IMenuInterface
+class OMOK_API UOmokGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
@@ -21,31 +22,36 @@ public:
 
 	virtual void Init() override;
 
-	UFUNCTION(BlueprintCallable)
-	void LoadMenu();
+	//UFUNCTION(BlueprintCallable)
+	//void LoadMenu();
 
-	UFUNCTION(BlueprintCallable)
-	void InGameLoadMenu();
+	//UFUNCTION(BlueprintCallable)
+	//void InGameLoadMenu();
 
-	UFUNCTION(Exec)
-	void Host() override;
+	//UFUNCTION(Exec)
+	//void Host() override;
 
-	UFUNCTION(Exec)
-	void Join(const FString& Address) override;
+	//UFUNCTION(Exec)
+	//void Join(const FString& Address) override;
 
-	virtual void LoadMainMenu() override;
+	//virtual void LoadMainMenu() override;
 
 
 public:
-	//void Open();
-
+	FORCEINLINE FOnWorldChangedDelegate& GetWorldChangedDelegate() { return OnWorldChangedDelegate; }
 
 
 private:
-	TSubclassOf<class UUserWidget> MenuClass;
-	TSubclassOf<class UUserWidget> InGameMenuClass;
+	virtual void OnWorldChanged(UWorld* OldWorld, UWorld* NewWorld) override;
 
-	class UMainMenu* Menu;
-	class UInGameMenu* InMenu;
+
+
+	//TSubclassOf<class UUserWidget> MenuClass;
+	//TSubclassOf<class UUserWidget> InGameMenuClass;
+
+	//class UMainMenu* Menu;
+	//class UInGameMenu* InMenu;
+
+	FOnWorldChangedDelegate OnWorldChangedDelegate;
 };
 

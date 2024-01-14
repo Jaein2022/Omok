@@ -5,8 +5,9 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
-#include "../Player/OmokPlayerController.h"
 #include "GameFramework/GameModeBase.h"
+#include "SocketSubsystem.h"
+#include "IPAddress.h"
 
 
 UOmokHostingUI::UOmokHostingUI(const FObjectInitializer& ObjectInitializer):
@@ -36,14 +37,48 @@ void UOmokHostingUI::SetIsEnabled(bool bInIsEnabled)
 	}
 }
 
+void UOmokHostingUI::SetWaiting()
+{
+	GetWorld()->GetTimerManager().SetTimer(
+		TextChangeTimerHandle,
+		TextChangeTimerDelegate,
+		0.5f,
+		true
+	);
+
+	WaitingTextBlock->SetText(WaitingTexts[WaitingTextIndex]);
+	WaitingTextBlock->SetJustification(ETextJustify::Left);
+
+	HostIPAddressBlock->SetVisibility(ESlateVisibility::Visible);
+	HostIPAddressBlock->SetIsEnabled(true);
+
+	ReadyButtonTextBlock->SetColorAndOpacity(FColor(100, 100, 100));
+
+	ReadyButton->SetIsEnabled(false);
+}
+
+void UOmokHostingUI::SetJoined()
+{
+	GetWorld()->GetTimerManager().ClearTimer(TextChangeTimerHandle);
+
+	WaitingTextBlock->SetText(JoinedText);
+	WaitingTextBlock->SetJustification(ETextJustify::Center);
+
+	HostIPAddressBlock->SetVisibility(ESlateVisibility::Hidden);
+	HostIPAddressBlock->SetIsEnabled(false);
+
+	ReadyButtonTextBlock->SetColorAndOpacity(FColor::Black);
+
+	ReadyButton->SetIsEnabled(true);
+}
+
 void UOmokHostingUI::NativeConstruct()
 {
-	OwningPlayerController = CastChecked<AOmokPlayerController>(GetOwningPlayer());
-
 	ensure(HostMenu);
 
 	ensure(WaitingTextBlock);
 	WaitingTextBlock->SetMinDesiredWidth(600);
+	WaitingTextBlock->SetJustification(ETextJustify::Left);
 
 	WaitingTexts.Reserve(4);
 	WaitingTexts.Emplace(FText::FromString(FString(TEXT("Waiting"))));
@@ -62,8 +97,19 @@ void UOmokHostingUI::NativeConstruct()
 		GET_FUNCTION_NAME_CHECKED(UOmokHostingUI, ChangeWaitingText)
 	);
 
+	ensure(HostIPAddressBlock);
+	bool bCanBindAll = false;
+	const FString HostIP = ISocketSubsystem::Get(	
+	//주어진 플랫폼에 맞는 소켓 서브시스템을 가져오는 함수. "Sockets" 모듈 필요.
+		PLATFORM_SOCKETSUBSYSTEM	//현재 플랫폼 이름.
+	)->GetLocalHostAddr(			//로컬 호스트의 IP주소를 가져오는 함수.
+		*GLog,						//로그 메세지를 출력할 디바이스.
+		bCanBindAll					//true: 바인드 할 수 있는 IP주소만 가져온다. false: 전부 다 가져온다.
+	)->ToString(false /*false: 포트는 생략한다.*/);
+
+	HostIPAddressBlock->SetText(FText::FromString(TEXT("Host IP : ") + HostIP));
+
 	ensure(ReadyButton);
-	ReadyButton->OnClicked.AddDynamic(this, &UOmokHostingUI::OnClickedReadyButton);
 	ReadyButton->SetIsEnabled(false);
 
 	ensure(ReadyButtonTextBlock);
@@ -87,45 +133,17 @@ void UOmokHostingUI::ChangeWaitingText()
 	}
 }
 
-void UOmokHostingUI::OnClickedReadyButton()
-{
-	//플레이맵으로 이동.
-}
-
 void UOmokHostingUI::OnClickedCancelButton()
 {
 	GetWorld()->GetTimerManager().ClearTimer(TextChangeTimerHandle);
-
-	OwningPlayerController->CancelHosting();
 }
 
 void UOmokHostingUI::OnJoinedClient(AGameModeBase* GameMode, APlayerController* NewPlayer)
 {
-	GetWorld()->GetTimerManager().ClearTimer(TextChangeTimerHandle);
-
-	WaitingTextBlock->SetText(JoinedText);
-	
-	WaitingTextBlock->SetJustification(ETextJustify::Center);
-
-	ReadyButtonTextBlock->SetColorAndOpacity(FColor::Black);
-	
-	ReadyButton->SetIsEnabled(true);
+	SetJoined();
 }
 
 void UOmokHostingUI::OnDisjoinedClient(AGameModeBase* GameMode, AController* ExitingPlayer)
 {
-	GetWorld()->GetTimerManager().SetTimer(
-		TextChangeTimerHandle,
-		TextChangeTimerDelegate,
-		0.5f,
-		true
-	);
-
-	WaitingTextBlock->SetText(WaitingTexts[WaitingTextIndex]);
-
-	WaitingTextBlock->SetJustification(ETextJustify::Left);
-
-	ReadyButtonTextBlock->SetColorAndOpacity(FColor(100, 100, 100));
-	
-	ReadyButton->SetIsEnabled(false);
+	SetWaiting();
 }

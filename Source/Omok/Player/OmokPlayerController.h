@@ -6,6 +6,9 @@
 #include "GameFramework/PlayerController.h"
 #include "OmokPlayerController.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnConnectedAsClient);
+DECLARE_MULTICAST_DELEGATE(FOnDisconnected);
+
 /**
  * 
  */
@@ -14,8 +17,7 @@ class OMOK_API AOmokPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-	friend class UOmokLobbyUI;
-	friend class UOmokHostingUI;
+	//
 
 public:
 	AOmokPlayerController();
@@ -26,19 +28,33 @@ public:
 	FORCEINLINE bool GetColor() const { return bWhite; }
 
 
+
 protected:
 	virtual void BeginPlay() override;
 
-private:
-	void StartHosting() const;
 
+
+private:
+	//호스팅 시작 함수.
+	UFUNCTION()
+	void StartHosting();	
+
+	//호스팅 취소 함수.
+	UFUNCTION()
 	void CancelHosting();
 	
-	void ConnectToIPAddress(const FText& IPAddress);
+	//입력받은 IP 주소의 호스팅에 클라이언트로 접속하는 함수. 
+	UFUNCTION()
+	void ConnectToIPAddress();	
 
+	//클라이언트의 연결 해제 함수.
+	UFUNCTION()
 	void Disconnect();
 
+	//게임 완전 종료 함수.
+	UFUNCTION()
 	void QuitGame();
+
 
 
 private:
@@ -49,5 +65,4 @@ private:
 	TObjectPtr<class UOmokHostingUI> HostingUI;
 
 	bool bWhite;
-
 };
