@@ -6,28 +6,23 @@
 #include "GameFramework/PlayerController.h"
 #include "OmokPlayerController.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnConnectedAsClient);
-DECLARE_MULTICAST_DELEGATE(FOnDisconnected);
-
 /**
- * 
+ * 서버 생성/접속 관리와 레벨 이동 및 UI 입력처리 클래스.
  */
 UCLASS()
 class OMOK_API AOmokPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-	//
-
 public:
 	AOmokPlayerController();
 
-	
+	//클라이언트의 Ready 버튼을 깜빡거리게 하는 함수.
+	UFUNCTION(Client, Unreliable)
+	void ClientRPC_FlickerReadyButton();
 
-	FORCEINLINE void SetColor(const bool InbWhite) { this->bWhite = InbWhite; }
-	FORCEINLINE bool GetColor() const { return bWhite; }
-
-
+	//Ready 버튼을 깜빡거리게 하는 함수.
+	void FlickerReadyButton();
 
 protected:
 	virtual void BeginPlay() override;
@@ -43,7 +38,7 @@ private:
 	UFUNCTION()
 	void CancelHosting();
 	
-	//입력받은 IP 주소의 호스팅에 클라이언트로 접속하는 함수. 
+	//입력받은 IP 주소의 호스트에 클라이언트로 접속하는 함수. 
 	UFUNCTION()
 	void ConnectToIPAddress();	
 
@@ -51,9 +46,17 @@ private:
 	UFUNCTION()
 	void Disconnect();
 
+	//Ready 버튼 눌렀을때 호출되는 함수.
+	UFUNCTION()
+	void OnClickedReadyButton();
+
 	//게임 완전 종료 함수.
 	UFUNCTION()
 	void QuitGame();
+
+	//클라이언트가 Ready 버튼을 눌렀다고 서버에게 알리는 함수.
+	UFUNCTION(Server, Unreliable)
+	void ServerRPC_NotifyOnReadied();
 
 
 
@@ -63,6 +66,4 @@ private:
 
 	TSubclassOf<class UUserWidget> HostingUIClass;
 	TObjectPtr<class UOmokHostingUI> HostingUI;
-
-	bool bWhite;
 };

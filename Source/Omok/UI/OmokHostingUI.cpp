@@ -16,35 +16,16 @@ UOmokHostingUI::UOmokHostingUI(const FObjectInitializer& ObjectInitializer):
 {
 }
 
-void UOmokHostingUI::SetIsEnabled(bool bInIsEnabled)
-{
-	Super::SetIsEnabled(bInIsEnabled);
-
-	if(bInIsEnabled)
-	{
-		GetWorld()->GetTimerManager().SetTimer(
-			TextChangeTimerHandle,
-			TextChangeTimerDelegate,
-			0.5f,
-			true
-		);
-
-		WaitingTextIndex = 0;
-	}
-	else
-	{
-		GetWorld()->GetTimerManager().ClearTimer(TextChangeTimerHandle);
-	}
-}
-
 void UOmokHostingUI::SetWaiting()
 {
 	GetWorld()->GetTimerManager().SetTimer(
-		TextChangeTimerHandle,
-		TextChangeTimerDelegate,
+		HostingUITimerHandle,
+		TextChangeDelegate,
 		0.5f,
 		true
 	);
+
+	WaitingTextIndex = 0;
 
 	WaitingTextBlock->SetText(WaitingTexts[WaitingTextIndex]);
 	WaitingTextBlock->SetJustification(ETextJustify::Left);
@@ -59,7 +40,7 @@ void UOmokHostingUI::SetWaiting()
 
 void UOmokHostingUI::SetJoined()
 {
-	GetWorld()->GetTimerManager().ClearTimer(TextChangeTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(HostingUITimerHandle);
 
 	WaitingTextBlock->SetText(JoinedText);
 	WaitingTextBlock->SetJustification(ETextJustify::Center);
@@ -70,6 +51,16 @@ void UOmokHostingUI::SetJoined()
 	ReadyButtonTextBlock->SetColorAndOpacity(FColor::Black);
 
 	ReadyButton->SetIsEnabled(true);
+}
+
+void UOmokHostingUI::SetFlickeringOn()
+{
+	GetWorld()->GetTimerManager().SetTimer(HostingUITimerHandle, FlickeringDelegate, 0.5f, true);
+}
+
+void UOmokHostingUI::SetFlickeringOff()
+{
+	GetWorld()->GetTimerManager().ClearTimer(HostingUITimerHandle);
 }
 
 void UOmokHostingUI::NativeConstruct()
@@ -90,14 +81,12 @@ void UOmokHostingUI::NativeConstruct()
 
 	WaitingTextBlock->SetText(WaitingTexts[0]);
 
-	TextChangeTimerHandle.Invalidate();
+	HostingUITimerHandle.Invalidate();
 
-	TextChangeTimerDelegate.BindUFunction(
-		this,
-		GET_FUNCTION_NAME_CHECKED(UOmokHostingUI, ChangeWaitingText)
-	);
+	TextChangeDelegate.BindUObject(this, &UOmokHostingUI::ChangeWaitingText);
 
 	ensure(HostIPAddressBlock);
+
 	bool bCanBindAll = false;
 	const FString HostIP = ISocketSubsystem::Get(	
 	//주어진 플랫폼에 맞는 소켓 서브시스템을 가져오는 함수. "Sockets" 모듈 필요.
@@ -115,11 +104,37 @@ void UOmokHostingUI::NativeConstruct()
 	ensure(ReadyButtonTextBlock);
 	ReadyButtonTextBlock->SetColorAndOpacity(FColor(100, 100, 100));
 
+	bFlickeringSwitch = false;
+
+	FlickeringDelegate.BindUObject(this, &UOmokHostingUI::FlickerReadyButtonText);
+
 	ensure(CancelButton);
 	CancelButton->OnClicked.AddDynamic(this, &UOmokHostingUI::OnClickedCancelButton);
 
 	FGameModeEvents::GameModePostLoginEvent.AddUObject(this, &UOmokHostingUI::OnJoinedClient);
 	FGameModeEvents::GameModeLogoutEvent.AddUObject(this, &UOmokHostingUI::OnDisjoinedClient);
+
+	GetGameInstance()->OnNotifyPreClientTravel().AddUObject(this, &UOmokHostingUI::OnNotifyPreLevelChange);
+}
+
+void UOmokHostingUI::OnClickedCancelButton()
+{
+	GetWorld()->GetTimerManager().ClearTimer(HostingUITimerHandle);
+}
+
+void UOmokHostingUI::OnJoinedClient(AGameModeBase* GameMode, APlayerController* NewPlayer)
+{
+	SetJoined();
+}
+
+void UOmokHostingUI::OnDisjoinedClient(AGameModeBase* GameMode, AController* ExitingPlayer)
+{
+	SetWaiting();
+}
+
+void UOmokHostingUI::OnNotifyPreLevelChange(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel)
+{
+	SetWaiting();
 }
 
 void UOmokHostingUI::ChangeWaitingText()
@@ -133,17 +148,8 @@ void UOmokHostingUI::ChangeWaitingText()
 	}
 }
 
-void UOmokHostingUI::OnClickedCancelButton()
+void UOmokHostingUI::FlickerReadyButtonText()
 {
-	GetWorld()->GetTimerManager().ClearTimer(TextChangeTimerHandle);
-}
-
-void UOmokHostingUI::OnJoinedClient(AGameModeBase* GameMode, APlayerController* NewPlayer)
-{
-	SetJoined();
-}
-
-void UOmokHostingUI::OnDisjoinedClient(AGameModeBase* GameMode, AController* ExitingPlayer)
-{
-	SetWaiting();
+	ReadyButtonTextBlock->SetOpacity(bFlickeringSwitch ? 1.f : 0.f);
+	bFlickeringSwitch = !bFlickeringSwitch;
 }

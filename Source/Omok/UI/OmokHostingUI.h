@@ -7,27 +7,25 @@
 #include "OmokHostingUI.generated.h"
 
 /**
- * 
+ * 호스팅 UI 클래스.
  */
 UCLASS()
 class OMOK_API UOmokHostingUI : public UUserWidget
 {
 	GENERATED_BODY()
 
-	//호스팅 UI 클래스.
-
-	//friend class AOmokPlayerController;
-
 public:
 	UOmokHostingUI(const FObjectInitializer& ObjectInitializer);
-
-	virtual void SetIsEnabled(bool bInIsEnabled) override;
 
 	//Ready버튼 비활성화 시키고 Waiting 문자열 띄우는 함수.
 	void SetWaiting();	
 
 	//Ready버튼 활성화 시키고 Joined 문자열 띄우는 함수.
 	void SetJoined();	
+
+	void SetFlickeringOn();
+
+	void SetFlickeringOff();
 
 	FORCEINLINE const TObjectPtr<class UButton> GetCancelButton() const { return CancelButton; }
 	FORCEINLINE const TObjectPtr<class UButton> GetReadyButton() const { return ReadyButton; }
@@ -50,10 +48,17 @@ private:
 	UFUNCTION()
 	void OnDisjoinedClient(AGameModeBase* GameMode, AController* ExitingPlayer);
 
+	//레벨 전환 절차 시작할 때.
+	UFUNCTION()
+	void OnNotifyPreLevelChange(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel);
 
-private:
+	//Waiting 텍스트 변환 함수.
 	UFUNCTION()
 	void ChangeWaitingText();
+
+	//Ready 글자 깜빡거리게 하는 함수.
+	UFUNCTION()
+	void FlickerReadyButtonText();
 
 
 private:
@@ -63,9 +68,9 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTextBlock> WaitingTextBlock;
 
-	FTimerHandle TextChangeTimerHandle;
+	FTimerHandle HostingUITimerHandle;
 
-	FTimerDelegate TextChangeTimerDelegate;
+	FTimerDelegate TextChangeDelegate;
 
 	TArray<FText> WaitingTexts;
 
@@ -81,6 +86,10 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTextBlock> ReadyButtonTextBlock;
+
+	bool bFlickeringSwitch;
+
+	FTimerDelegate FlickeringDelegate;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> CancelButton;

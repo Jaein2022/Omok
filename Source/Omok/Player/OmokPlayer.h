@@ -11,25 +11,35 @@ class OMOK_API AOmokPlayer : public APawn
 {
 	GENERATED_BODY()
 
+	friend class AOmokPlayerController;
+
 public:
 	// Sets default values for this pawn's properties
 	AOmokPlayer();
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+
+
+public:
+	FORCEINLINE void SetColor(const uint8 InbWhite) { bWhite = InbWhite; }
+	FORCEINLINE uint8 GetColor() const { return bWhite; }
+
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void PostInitializeComponents() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	//// Called to bind functionality to input
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	
+
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<class UCameraComponent> OmokPlayerCamera;
 
@@ -38,5 +48,18 @@ protected:
 
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 	//TObjectPtr<class UInputAction> OmokMouseClick;
+
+
+
+private:
+
+
+
+private:
+	UPROPERTY(Replicated)
+	uint8 bWhite: 1;
+
+	//UFUNCTION()
+	//void TestFunction();
 
 };

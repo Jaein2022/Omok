@@ -7,19 +7,17 @@
 #include "OmokLobbyUI.generated.h"
 
 /**
- * 
+ * 로비 UI 클래스.
  */
 UCLASS()
 class OMOK_API UOmokLobbyUI : public UUserWidget
 {
 	GENERATED_BODY()
-	
-	//로비 UI 클래스.
 
 public:
 	UOmokLobbyUI(const FObjectInitializer& ObjectInitializer);
 
-	virtual void SetIsEnabled(bool bInIsEnabled) override;
+	void ShowJoinMenu() const;
 
 	const FString& GetIPAddress() const;
 
@@ -27,7 +25,7 @@ public:
 	FORCEINLINE const TObjectPtr<class UButton> GetQuitButton() const { return QuitButton; }
 	FORCEINLINE const TObjectPtr<class UButton> GetEnterButton() const { return EnterButton; }
 	FORCEINLINE const TObjectPtr<class UButton> GetBackButton() const { return BackButton; }
-
+	FORCEINLINE static void SwitchToJoinMenu() { bRetunedFromHost = true; }
 
 protected:
 	virtual void NativeConstruct() override;
@@ -39,14 +37,6 @@ private:
 	
 	UFUNCTION()
 	void OnClickedBackButton();
-
-	//UFUNCTION()
-	//void OnFailedToJoin(class UWorld* World, class UNetDriver* NetDriver);
-
-
-private:
-	//UFUNCTION()
-	//void FlickerReadyButtonText();
 
 
 

@@ -2,17 +2,16 @@
 
 
 #include "OmokPlayerController.h"
-#include "../UI/OmokLobbyUI.h"
-#include "../UI/OmokHostingUI.h"
+#include "Omok/UI/OmokLobbyUI.h"
+#include "Omok/UI/OmokHostingUI.h"
 #include "Components/Button.h"
+#include "Omok/OmokGameModeBase.h"
 
 AOmokPlayerController::AOmokPlayerController()
 {
 	bShowMouseCursor = true;
 	bEnableMouseOverEvents = true;
 	bEnableClickEvents = true;
-
-	bWhite = false;
 
 	static ConstructorHelpers::FClassFinder<UUserWidget> LobbyUIClassRef(
 		TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/WBP_OmokLobbyUI.WBP_OmokLobbyUI_C'")
@@ -25,6 +24,18 @@ AOmokPlayerController::AOmokPlayerController()
 	);
 	ensure(HostingUIClassRef.Succeeded());
 	HostingUIClass = HostingUIClassRef.Class;
+
+	bReplicates = true;
+}
+
+void AOmokPlayerController::ClientRPC_FlickerReadyButton_Implementation()
+{
+	HostingUI->SetFlickeringOn();
+}
+
+void AOmokPlayerController::FlickerReadyButton()
+{
+	HostingUI->SetFlickeringOn();
 }
 
 void AOmokPlayerController::BeginPlay()
@@ -36,39 +47,39 @@ void AOmokPlayerController::BeginPlay()
 		return;
 	}
 	
-	LobbyUI = CastChecked<UOmokLobbyUI>(CreateWidget(this, LobbyUIClass));
-	LobbyUI->GetHostButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::StartHosting);
-	LobbyUI->GetQuitButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::QuitGame);
-	LobbyUI->GetEnterButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::ConnectToIPAddress);
-	LobbyUI->GetBackButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::Disconnect);
-	LobbyUI->AddToViewport();
+	//GEngine->OnNetworkFailure().AddUObject(this, &AOmokPlayerController::NetworkFailureTestFunc);
 
-	HostingUI = CastChecked<UOmokHostingUI>(CreateWidget(this, HostingUIClass));
-	HostingUI->GetCancelButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::CancelHosting);
-	HostingUI->AddToViewport();
-	
 	const FString CurrentWorldName = GetWorld()->GetName();
 	if(CurrentWorldName == TEXT("Lobby"))
 	{
-		HostingUI->SetVisibility(ESlateVisibility::Hidden);
-		HostingUI->SetIsEnabled(false);
-
-		LobbyUI->SetIsEnabled(true);
-		LobbyUI->SetVisibility(ESlateVisibility::Visible);
+		LobbyUI = CastChecked<UOmokLobbyUI>(CreateWidget(this, LobbyUIClass));
+		LobbyUI->GetHostButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::StartHosting);
+		LobbyUI->GetQuitButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::QuitGame);
+		LobbyUI->GetEnterButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::ConnectToIPAddress);
+		LobbyUI->GetBackButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::Disconnect);
+		LobbyUI->AddToViewport();
 	}
 	else if(CurrentWorldName == TEXT("HostingLevel"))
 	{
-		LobbyUI->SetVisibility(ESlateVisibility::Hidden);
-		LobbyUI->SetIsEnabled(false);
-
-		HostingUI->SetIsEnabled(true);
-		HostingUI->SetVisibility(ESlateVisibility::Visible);
+		HostingUI = CastChecked<UOmokHostingUI>(CreateWidget(this, HostingUIClass));
+		HostingUI->GetReadyButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::OnClickedReadyButton);
+		HostingUI->GetCancelButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::CancelHosting);
+		HostingUI->AddToViewport();
+		HostingUI->SetWaiting();
 		
 		if(ENetMode::NM_Client == GetWorld()->GetNetMode())
 		{
-			//접속한 클라이언트는 대기할 필요 없이 바로 Ready버튼 누를 수 있게 한다.
+			//접속한 클라이언트는 대기할 필요 없이 바로 Ready버튼을 누를 수 있게 한다.
 			HostingUI->SetJoined();
+
+			//클라이언트가 접속 취소할 때 LobbyUI에서 JoinMenu를 보여주게 한다.
+			UOmokLobbyUI::SwitchToJoinMenu();
 		}
+	}
+	else if(CurrentWorldName == TEXT("PlayLevel"))
+	{
+
+
 	}
 }
 
@@ -95,7 +106,24 @@ void AOmokPlayerController::Disconnect()
 	ClientTravel(TEXT("/Game/Maps/Lobby?closed"), ETravelType::TRAVEL_Absolute);
 }
 
+void AOmokPlayerController::OnClickedReadyButton()
+{
+	if(HasAuthority())
+	{
+		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->SetServerReady(this);
+	}
+	else
+	{
+		ServerRPC_NotifyOnReadied();
+	}
+}
+
 void AOmokPlayerController::QuitGame()
 {
 	ConsoleCommand("quit");
+}
+
+void AOmokPlayerController::ServerRPC_NotifyOnReadied_Implementation()
+{
+	GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->SetClientReady(this);
 }

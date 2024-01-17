@@ -14,20 +14,9 @@ UOmokLobbyUI::UOmokLobbyUI(const FObjectInitializer& ObjectInitializer): Super(O
 {	
 }
 
-void UOmokLobbyUI::SetIsEnabled(bool bInIsEnabled)
+void UOmokLobbyUI::ShowJoinMenu() const
 {
-	Super::SetIsEnabled(bInIsEnabled);
-
-	if(false == bInIsEnabled)
-	{
-		return;
-	}
-
-	if(bRetunedFromHost)
-	{
-		MenuSwitcher->SetActiveWidget(JoinMenu);
-		bRetunedFromHost = false;
-	}
+	MenuSwitcher->SetActiveWidget(JoinMenu);
 }
 
 const FString& UOmokLobbyUI::GetIPAddress() const
@@ -61,18 +50,12 @@ void UOmokLobbyUI::NativeConstruct()
 	ensure(BackButton);
 	BackButton->OnClicked.AddDynamic(this, &UOmokLobbyUI::OnClickedBackButton);
 
-
-	if(ENetMode::NM_Client == GetWorld()->GetNetMode())
+	if(bRetunedFromHost)
 	{
-		bRetunedFromHost = true;
+		MenuSwitcher->SetActiveWidget(JoinMenu);
 	}
 
-	//GetGameInstance()->OnNotifyPreClientTravel().AddUObject(this, &UOmokLobbyUI::OnDisconnected);
-	//GEngine->OnNetworkFailure().AddUObject(this, &UOmokLobbyUI::OnFailedToJoin);
-	//FGameDelegates::Get().GetHandleDisconnectDelegate().AddUObject(this, &UOmokLobbyUI::OnFailedToJoin);
-
-
-	
+	bRetunedFromHost = false;
 }
 
 void UOmokLobbyUI::OnClickedJoinButton()
@@ -84,14 +67,3 @@ void UOmokLobbyUI::OnClickedBackButton()
 {
 	MenuSwitcher->SetActiveWidget(MainMenu);
 }
-
-//void UOmokLobbyUI::OnFailedToJoin(class UWorld* World, class UNetDriver* NetDriver)
-//{
-//	int32 temp = 0;
-//}
-
-//void UOmokLobbyUI::FlickerReadyButtonText()
-//{
-//	ReadyButtonTextBlock->SetOpacity(bFlickeringSwitch ? 1.f : 0.f);
-//	bFlickeringSwitch = bFlickeringSwitch ? false : true;
-//}
