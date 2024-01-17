@@ -4,7 +4,10 @@
 #include "OmokPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
-#include "Blueprint/UserWidget.h"
+#include "Net/UnrealNetwork.h"
+#include "Omok/OmokGameModeBase.h"
+#include "Omok/Omok.h"
+//#include "OmokPlayerState.h"
 
 // Sets default values
 AOmokPlayer::AOmokPlayer()
@@ -13,8 +16,8 @@ AOmokPlayer::AOmokPlayer()
 	PrimaryActorTick.bCanEverTick = true;
 
 	OmokPlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("OmokCamera"));
-	OmokPlayerCamera->SetWorldRotation(FRotator(-90.f, 0.f, 0.f));
 	OmokPlayerCamera->SetupAttachment(this->RootComponent);
+	OmokPlayerCamera->SetProjectionMode(ECameraProjectionMode::Orthographic);
 
 	//static ConstructorHelpers::FObjectFinder<UInputAction> OmokCheckMouseLocationRef(
 	//	TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokCheckMouseLocation.IA_OmokCheckMouseLocation'")
@@ -27,7 +30,14 @@ AOmokPlayer::AOmokPlayer()
 	//);
 	//ensure(OmokMouseClickRef.Succeeded());
 	//OmokMouseClick = OmokMouseClickRef.Object;
-	
+
+	bReplicates = true;
+}
+
+// Called every frame
+void AOmokPlayer::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 // Called when the game starts or when spawned
@@ -37,19 +47,22 @@ void AOmokPlayer::BeginPlay()
 
 }
 
-void AOmokPlayer::PostInitializeComponents()
+void AOmokPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::PostInitializeComponents();
-
-
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AOmokPlayer, bWhite, COND_InitialOnly);
 }
 
-// Called every frame
-void AOmokPlayer::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
+//void AOmokPlayer::TestFunction()
+//{
+//	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
+//		this,
+//		__FUNCTION__,
+//		TEXT("ColorTest"),
+//		30.f,
+//		bWhite?FColor::White:FColor::Black
+//	);
+//}
 
 //void AOmokPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 //{
