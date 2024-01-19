@@ -7,7 +7,7 @@
 #include "OmokPlayerController.generated.h"
 
 /**
- * 서버 생성/접속 관리와 레벨 이동 및 UI 입력처리 클래스.
+ * 서버 생성/접속 관리 및 UI 입력처리 클래스.
  */
 UCLASS()
 class OMOK_API AOmokPlayerController : public APlayerController
@@ -27,8 +27,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-
-
 private:
 	//호스팅 시작 함수.
 	UFUNCTION()
@@ -38,9 +36,13 @@ private:
 	UFUNCTION()
 	void CancelHosting();
 	
-	//입력받은 IP 주소의 호스트에 클라이언트로 접속하는 함수. 
+	//Enter 버튼을 눌렀을때 입력받은 IP 주소의 호스트에 클라이언트로 접속하는 함수. 
 	UFUNCTION()
-	void ConnectToIPAddress();	
+	void OnClickedEnterButton_Connect();	
+
+	//엔터키를 눌렀을 때 입력된 IP 주소의 호스트에 클라이언트로 접속하는 함수. 
+	UFUNCTION()
+	void OnTextCommitted_Connect(const FText& InText, ETextCommit::Type CommitMethod);
 
 	//클라이언트의 연결 해제 함수.
 	UFUNCTION()
@@ -66,4 +68,7 @@ private:
 
 	TSubclassOf<class UUserWidget> HostingUIClass;
 	TObjectPtr<class UOmokHostingUI> HostingUI;
+
+	TSubclassOf<class UUserWidget> PlayUIClass;
+	TObjectPtr<class UOmokPlayUI> PlayUI;
 };

@@ -24,6 +24,7 @@ public:
 	FORCEINLINE const TObjectPtr<class UButton> GetHostButton() const { return HostButton; }
 	FORCEINLINE const TObjectPtr<class UButton> GetQuitButton() const { return QuitButton; }
 	FORCEINLINE const TObjectPtr<class UButton> GetEnterButton() const { return EnterButton; }
+	FORCEINLINE const TObjectPtr<class UEditableTextBox> GetIPAddressBox() const { return IPAddressBox; }
 	FORCEINLINE const TObjectPtr<class UButton> GetBackButton() const { return BackButton; }
 	FORCEINLINE static void SwitchToJoinMenu() { bRetunedFromHost = true; }
 
