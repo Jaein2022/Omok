@@ -4,7 +4,9 @@
 #include "OmokPlayerController.h"
 #include "Omok/UI/OmokLobbyUI.h"
 #include "Omok/UI/OmokHostingUI.h"
+#include "Omok/UI/OmokPlayUI.h"
 #include "Components/Button.h"
+#include "Components/EditableTextBox.h"
 #include "Omok/OmokGameModeBase.h"
 
 AOmokPlayerController::AOmokPlayerController()
@@ -24,6 +26,12 @@ AOmokPlayerController::AOmokPlayerController()
 	);
 	ensure(HostingUIClassRef.Succeeded());
 	HostingUIClass = HostingUIClassRef.Class;
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> PlayUIClassRef(
+		TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/WBP_OmokPlayUI.WBP_OmokPlayUI_C'")
+	);
+	ensure(PlayUIClassRef.Succeeded());
+	PlayUIClass = PlayUIClassRef.Class;
 
 	bReplicates = true;
 }
@@ -55,7 +63,8 @@ void AOmokPlayerController::BeginPlay()
 		LobbyUI = CastChecked<UOmokLobbyUI>(CreateWidget(this, LobbyUIClass));
 		LobbyUI->GetHostButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::StartHosting);
 		LobbyUI->GetQuitButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::QuitGame);
-		LobbyUI->GetEnterButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::ConnectToIPAddress);
+		LobbyUI->GetIPAddressBox()->OnTextCommitted.AddDynamic(this, &AOmokPlayerController::OnTextCommitted_Connect);
+		LobbyUI->GetEnterButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::OnClickedEnterButton_Connect);
 		LobbyUI->GetBackButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::Disconnect);
 		LobbyUI->AddToViewport();
 	}
@@ -78,8 +87,9 @@ void AOmokPlayerController::BeginPlay()
 	}
 	else if(CurrentWorldName == TEXT("PlayLevel"))
 	{
+		PlayUI = CastChecked<UOmokPlayUI>(CreateWidget(this, PlayUIClass));
 
-
+		PlayUI->AddToViewport();
 	}
 }
 
@@ -90,10 +100,10 @@ void AOmokPlayerController::StartHosting()
 
 void AOmokPlayerController::CancelHosting() 
 {
-	ClientTravel(TEXT("/Game/Maps/Lobby"), ETravelType::TRAVEL_Absolute);
+	ClientTravel(TEXT("/Game/Maps/Lobby?Closed"), ETravelType::TRAVEL_Absolute);
 }
 
-void AOmokPlayerController::ConnectToIPAddress()
+void AOmokPlayerController::OnClickedEnterButton_Connect()
 {
 	const FString IPAddress = LobbyUI->GetIPAddress();
 	ensureMsgf(false == IPAddress.IsEmpty(), TEXT("%s"), TEXT("IP address must not be empty."));
@@ -101,9 +111,21 @@ void AOmokPlayerController::ConnectToIPAddress()
 	ClientTravel(IPAddress, ETravelType::TRAVEL_Absolute);
 }
 
+void AOmokPlayerController::OnTextCommitted_Connect(const FText& InText, ETextCommit::Type CommitMethod)
+{
+	if(ETextCommit::Type::OnEnter != CommitMethod)
+	{
+		return;
+	}
+
+	ensureMsgf(false == InText.IsEmpty(), TEXT("%s"), TEXT("IP address must not be empty."));
+
+	ClientTravel(InText.ToString(), ETravelType::TRAVEL_Absolute);
+}
+
 void AOmokPlayerController::Disconnect()
 {
-	ClientTravel(TEXT("/Game/Maps/Lobby?closed"), ETravelType::TRAVEL_Absolute);
+	ClientTravel(TEXT("/Game/Maps/Lobby?Closed"), ETravelType::TRAVEL_Absolute);
 }
 
 void AOmokPlayerController::OnClickedReadyButton()

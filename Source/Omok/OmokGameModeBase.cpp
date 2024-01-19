@@ -50,14 +50,18 @@ void AOmokGameModeBase::PostLogin(APlayerController* NewPlayer)
 		return;
 	}
 
-	//CastChecked<AOmokPlayerController>(NewPlayer)->GetPlayerState<AOmokPlayerState>()->SetColor(bWhite);
 	CastChecked<AOmokPlayerController>(NewPlayer)->GetPawn<AOmokPlayer>()->SetColor(bWhite);
 	bWhite = !bWhite;
 }
 
 void AOmokGameModeBase::SetServerReady(TObjectPtr<AOmokPlayerController> InOmokPC)
 {
-	this->bServerReady = true;
+	if(bServerReady)
+	{
+		return;
+	}
+
+	bServerReady = true;
 
 	if(bServerReady && bClientReady)
 	{
@@ -82,7 +86,12 @@ void AOmokGameModeBase::SetServerReady(TObjectPtr<AOmokPlayerController> InOmokP
 
 void AOmokGameModeBase::SetClientReady(TObjectPtr<AOmokPlayerController> InOmokPC)
 {
-	this->bClientReady = true;
+	if(bClientReady)
+	{
+		return;
+	}
+
+	bClientReady = true;
 
 	if(bServerReady && bClientReady)
 	{
