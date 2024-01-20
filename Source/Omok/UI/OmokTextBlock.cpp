@@ -4,7 +4,7 @@
 #include "OmokTextBlock.h"
 #include "Fonts/SlateFontInfo.h"
 
-FSlateFontInfo UOmokTextBlock::MessageFontInfo = FSlateFontInfo(FCoreStyle::GetDefaultFont(), 24, TEXT("Regular"));
+const FSlateFontInfo UOmokTextBlock::MessageFontInfo = FSlateFontInfo(FCoreStyle::GetDefaultFont(), 24, TEXT("Regular"));
 
 UOmokTextBlock::UOmokTextBlock()
 {

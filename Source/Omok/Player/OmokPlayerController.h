@@ -6,9 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "OmokPlayerController.generated.h"
 
-/**
- * 서버 접속 관리 및 UI 입력처리 클래스.
- */
+//서버 접속 관리 및 UI 입력처리 클래스.
 UCLASS()
 class OMOK_API AOmokPlayerController : public APlayerController
 {

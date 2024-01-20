@@ -5,8 +5,9 @@
 #include "CoreMinimal.h"
 #include "Engine/Engine.h"
 
-//UCLASS() <- FOmokDevelopmentSupport.generated.h를 생성하지 않았으므로 사용할 수 없음.
+//개발 지원 기능만 모아둔 클래스.
 class OMOK_API FOmokDevelopmentSupport
+//UCLASS() <- FOmokDevelopmentSupport.generated.h를 생성하지 않았으므로 사용할 수 없음.
 {
 	//OMOK_API <- 언리얼 엔진에서 제공하는 다른 모듈이나 라이브러리를 참조하는데 필요한 매크로.
 

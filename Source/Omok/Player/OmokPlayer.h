@@ -6,19 +6,15 @@
 #include "GameFramework/Pawn.h"
 #include "OmokPlayer.generated.h"
 
-/**
-*
-*/
+//플레이어.
 UCLASS()
 class OMOK_API AOmokPlayer : public APawn
 {
 	GENERATED_BODY()
 
-	friend class AOmokPlayerController;
-
 public:
 	// Sets default values for this pawn's properties
-	AOmokPlayer();
+	AOmokPlayer(const FObjectInitializer& ObjectInitializer);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -45,6 +41,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<class UCameraComponent> OmokPlayerCamera;
 
+	TObjectPtr<class AOmokBoard> Board;
+
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 	//TObjectPtr<class UInputAction> OmokCheckMouseLocation;
 
@@ -54,9 +52,19 @@ protected:
 
 
 private:
+	UFUNCTION()
+	void OnBeginCursorOverlap_ChangeColor(UPrimitiveComponent* ClickedComponent);
+
+	UFUNCTION()
+	void OnEndCursorOverlap_ReturnColor(UPrimitiveComponent* ClickedComponent);
+
+	UFUNCTION()
+	void OnClicked_FixColor(UPrimitiveComponent* ClickedComponent, const FKey PressedButton);
 
 
 
 private:
+	const FVector2D BoardLocationFromPlayer;
+
 
 };

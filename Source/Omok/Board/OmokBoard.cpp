@@ -5,13 +5,11 @@
 #include "OmokNode.h"
 
 // Sets default values
-AOmokBoard::AOmokBoard()
+AOmokBoard::AOmokBoard(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	//얘가 틱이 필요할까??
-
-	NodeDistance = 235.f;
 
 	BoardMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoardMesh"));
 
@@ -22,8 +20,7 @@ AOmokBoard::AOmokBoard()
 	ensure(BoardMesh->SetStaticMesh(BoardMeshRef.Object));
 
 	RootComponent = BoardMesh;
-	//BoardMesh->SetupAttachment(this->RootComponent);
-	BoardMesh->SetRelativeScale3D(FVector(19.f, 19.f, 1.f));
+	BoardMesh->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> LineMaterialRef(
 		TEXT("/Script/Engine.Material'/Game/Assets/Materials/Line.Line'")
@@ -39,14 +36,6 @@ AOmokBoard::AOmokBoard()
 
 }
 
-// Called when the game starts or when spawned
-void AOmokBoard::BeginPlay()
-{
-	Super::BeginPlay();
-
-	CreateAllNodes();
-}
-
 // Called every frame
 void AOmokBoard::Tick(float DeltaTime)
 {
@@ -54,45 +43,9 @@ void AOmokBoard::Tick(float DeltaTime)
 
 }
 
-void AOmokBoard::CreateAllNodes()
-{
-	const FVector2D InitLocation(-NodeDistance * 7, -NodeDistance * 7);	//좌하단 노드 위치.
-	FActorSpawnParameters NodeSpawnParams;
-	NodeSpawnParams.Owner = this;
-	NodeSpawnParams.bNoFail = true;
-	NodeSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	const FAttachmentTransformRules NodeAttachmentRules(EAttachmentRule::KeepWorld, false);
-
-	AllNodes.Reserve(225);
-	for(int32 x = 0; x < 15; x++)
-	{
-		for(int32 y = 0; y < 15; y++)
-		{
-			const FString NodeName(FString::Printf(TEXT("OmokNode %d, %d"), x, y));
-			NodeSpawnParams.Name = FName(*NodeName);
-
-			TObjectPtr<AOmokNode> NewNode = GetWorld()->SpawnActor<AOmokNode>(
-				FVector(
-					InitLocation.X + (x * NodeDistance) + GetActorLocation().X,
-					InitLocation.Y + (y * NodeDistance) + GetActorLocation().Y,
-					30.f
-				),
-				FRotator(0, 0, 0),
-				NodeSpawnParams
-			);
-			NewNode->AttachToComponent(this->RootComponent, NodeAttachmentRules);
-			NewNode->SetCoordinate(x, y);
-			NewNode->SetActorLabel(NodeName);
-			//Label: 액터가 언리얼 에디터 뷰포트에 배치되었을때 보이는 이름. Name과 다르다.
-
-			AllNodes.Push(NewNode);
-		}
-	}
-}
-
 bool AOmokBoard::CheckWinningCondition(const TObjectPtr<AOmokNode> Node)
 {
+	ensure(HasAuthority());
 	ensure(IsValid(Node));
 
 	const int32 X = Node->GetCoordinate().X;
@@ -118,6 +71,14 @@ bool AOmokBoard::CheckWinningCondition(const TObjectPtr<AOmokNode> Node)
 
 	//같은색 돌이 5개 이상 연속되면 승리 처리.
 	return (5 <= LineLength) ? true : false;
+}
+
+// Called when the game starts or when spawned
+void AOmokBoard::BeginPlay()
+{
+	Super::BeginPlay();
+
+	CreateAllNodes();
 }
 
 int32 AOmokBoard::CountNodes(
@@ -159,4 +120,43 @@ int32 AOmokBoard::CountNodes(
 	}
 
 	return Length;
+}
+
+void AOmokBoard::CreateAllNodes()
+{
+	const FVector2D InitLocation(-NodeDistance * 7, -NodeDistance * 7);	//좌하단 노드 위치.
+	FActorSpawnParameters NodeSpawnParams;
+	NodeSpawnParams.Owner = this;
+	NodeSpawnParams.bNoFail = true;
+	NodeSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	const FAttachmentTransformRules NodeAttachmentRules(EAttachmentRule::KeepRelative, false);
+
+	AllNodes.Reserve(225);
+	for(int32 x = 0; x < 15; x++)
+	{
+		for(int32 y = 0; y < 15; y++)
+		{
+			const FString NodeName(FString::Printf(TEXT("OmokNode %d, %d"), x, y));
+			NodeSpawnParams.Name = FName(*NodeName);
+			
+			TObjectPtr<AOmokNode> NewNode = GetWorld()->SpawnActor<AOmokNode>(
+				FVector(
+					InitLocation.X + (x * NodeDistance), //+ GetActorLocation().X,
+					InitLocation.Y + (y * NodeDistance), //+ GetActorLocation().Y,
+					2.5f
+				),
+				GetActorUpVector().Rotation(),
+				NodeSpawnParams
+			);
+			ensure(NewNode);
+			NewNode->SetNodeScale(0.05f);
+			NewNode->AttachToComponent(this->RootComponent, NodeAttachmentRules);
+			NewNode->SetCoordinate(x, y);
+			NewNode->SetActorLabel(NodeName);
+			//Label: 액터가 언리얼 에디터 뷰포트에 배치되었을때 보이는 이름. Name과 다르다.
+
+			AllNodes.Push(NewNode);
+		}
+	}
 }

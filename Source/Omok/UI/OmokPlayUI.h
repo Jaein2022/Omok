@@ -6,9 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "OmokPlayUI.generated.h"
 
-/**
- * 플레이 레벨 UI 클래스.
- */
+//플레이 레벨 UI 클래스.
 UCLASS()
 class OMOK_API UOmokPlayUI : public UUserWidget
 {
