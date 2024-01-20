@@ -17,6 +17,7 @@ class OMOK_API AOmokGameStateBase : public AGameStateBase
 public:
 	AOmokGameStateBase();
 	
+	//전달받은 메세지를 송신자 제외한 나머지 플레이어 스테이트에 배분하는 함수. 
 	void DistributeMessage(const FText& InText, const TObjectPtr<class AOmokPlayerState> Sender);
 
 

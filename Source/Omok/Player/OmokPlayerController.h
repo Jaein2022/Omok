@@ -30,12 +30,6 @@ public:
 
 
 
-public:
-	FORCEINLINE void SetbWhite(const uint8 InbWhite) { bWhite = InbWhite; }
-	FORCEINLINE const uint8 GetbWhite() const { return bWhite; }
-
-
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -96,10 +90,4 @@ private:
 
 
 
-private:
-	UPROPERTY(ReplicatedUsing = OnRep_bWhite)
-	uint8 bWhite:1;
-
-	UFUNCTION()
-	void OnRep_bWhite();
 };

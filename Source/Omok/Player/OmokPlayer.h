@@ -6,6 +6,9 @@
 #include "GameFramework/Pawn.h"
 #include "OmokPlayer.generated.h"
 
+/**
+*
+*/
 UCLASS()
 class OMOK_API AOmokPlayer : public APawn
 {
