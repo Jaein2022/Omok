@@ -53,8 +53,8 @@ void AOmokGameModeBase::PostLogin(APlayerController* NewPlayer)
 		return;
 	}
 
-	CastChecked<AOmokPlayerController>(NewPlayer)->SetbWhite(bWhite);
-	FOmokDevelopmentSupport::DisplayDebugMessageForActors(NewPlayer, __FUNCTION__, TEXT("ColorTest"), 30.f, bWhite ? FColor::White : FColor::Black);
+	//플레이어별 색상 배정.
+	CastChecked<AOmokPlayerController>(NewPlayer)->GetPlayerState<AOmokPlayerState>()->SetbWhite(bWhite);
 	bWhite = !bWhite;
 }
 

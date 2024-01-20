@@ -66,6 +66,7 @@ void AOmokPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//서버가 가진 클라이언트의 플레이어 컨트롤러는 UI를 생성할 필요가 없으므로 생략한다.
 	if(false == IsLocalController())
 	{
 		return;
@@ -112,9 +113,13 @@ void AOmokPlayerController::BeginPlay()
 		PlayUI->GetSendButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::OnClickedSendButton_SendMessage);
 		PlayUI->AddToViewport();
 
+		//로컬 컨트롤러이면서 동시에 서버에서 Authority를 가진 플레이어 컨트롤러 == 리슨서버 자신의 플레이어 컨트롤러. 
+		//리슨서버의 컨트롤러는 이미 플레이어 스테이트의 생성이 끝나고 PostLogin()을 통해 받은 색상을 가져오므로 문제 없지만, 
+		// 클라이언트는 로컬 플레이어 컨트롤러의 BeginPlay() 이후 PostLogin()까지 거친 후에 프록시 플레이어 스테이트가 생성되므로 
+		// 이 시점에서 플레이어 스테이트를 호출하면 널포인터가 반환된다.
 		if(HasAuthority())
 		{
-			PlayUI->SetOwningPlayerColor(bWhite);
+			PlayUI->SetOwningPlayerColor(GetPlayerState<AOmokPlayerState>()->GetbWhite());
 		}
 	}
 }
@@ -122,7 +127,7 @@ void AOmokPlayerController::BeginPlay()
 void AOmokPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(AOmokPlayerController, bWhite, COND_AutonomousOnly);
+	//DOREPLIFETIME_CONDITION(AOmokPlayerController, bWhite, COND_AutonomousOnly);
 }
 
 void AOmokPlayerController::StartHosting()
@@ -189,16 +194,11 @@ void AOmokPlayerController::OnTextCommitted_SendMessage(const FText& InText, ETe
 		return;
 	}
 
-	GetPlayerState<AOmokPlayerState>();
+	GetPlayerState<AOmokPlayerState>()->ServerRPC_DeliverMessage(InText);
 }
 
 void AOmokPlayerController::OnClickedSendButton_SendMessage()
 {
 	const FText Message = PlayUI->GetMessageInputbox()->GetText();
-	GetPlayerState<AOmokPlayerState>();
-}
-
-void AOmokPlayerController::OnRep_bWhite()
-{
-	PlayUI->SetOwningPlayerColor(bWhite);
+	GetPlayerState<AOmokPlayerState>()->ServerRPC_DeliverMessage(Message);
 }

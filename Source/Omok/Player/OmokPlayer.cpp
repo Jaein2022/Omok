@@ -49,19 +49,7 @@ void AOmokPlayer::BeginPlay()
 void AOmokPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	//DOREPLIFETIME_CONDITION(AOmokPlayer, bWhite, COND_InitialOnly);
 }
-
-//void AOmokPlayer::TestFunction()
-//{
-//	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
-//		this,
-//		__FUNCTION__,
-//		TEXT("ColorTest"),
-//		30.f,
-//		bWhite?FColor::White:FColor::Black
-//	);
-//}
 
 //void AOmokPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 //{

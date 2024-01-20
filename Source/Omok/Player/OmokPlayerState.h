@@ -23,5 +23,24 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void ClientRPC_DeliverMessage(const FText& InText, const uint8 SenderColor);
 
-	const uint8 GetbWhite() const;
+
+
+public:
+	FORCEINLINE void SetbWhite(const uint8 InbWhite) { bWhite = InbWhite; }
+	FORCEINLINE const uint8 GetbWhite() const { return bWhite; }
+
+
+
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION()
+	void OnRep_bWhite();
+
+
+
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_bWhite)
+	uint8 bWhite : 1;
+
 };
