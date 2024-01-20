@@ -44,13 +44,12 @@ void AOmokPlayer::Tick(float DeltaTime)
 void AOmokPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AOmokPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(AOmokPlayer, bWhite, COND_InitialOnly);
+	//DOREPLIFETIME_CONDITION(AOmokPlayer, bWhite, COND_InitialOnly);
 }
 
 //void AOmokPlayer::TestFunction()

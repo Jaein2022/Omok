@@ -7,7 +7,7 @@
 #include "OmokTextBlock.generated.h"
 
 /**
- * 
+ * UTextBlock에 래핑(들여쓰기) 관련 세팅만 재조정한 클래스. 
  */
 UCLASS()
 class OMOK_API UOmokTextBlock : public UTextBlock
@@ -15,10 +15,12 @@ class OMOK_API UOmokTextBlock : public UTextBlock
 	GENERATED_BODY()
 	
 public:
-	void SetMessage(const FText& InText, const float Width, const bool bWhite);
+	UOmokTextBlock();
 
-public:
-	FORCEINLINE void SetWrappingPolicy(const ETextWrappingPolicy InWrappingPolicy) { WrappingPolicy = InWrappingPolicy; }
-	FORCEINLINE void SetWrapTextAt(const float InWrapTextAt) { WrapTextAt = InWrapTextAt; }
+	void SetMessageAndConfig(const FText& InText, const float Width, const uint8 bWhite);
 
+
+
+private:
+	static struct FSlateFontInfo MessageFontInfo;
 };

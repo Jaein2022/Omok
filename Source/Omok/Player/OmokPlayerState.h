@@ -1,0 +1,27 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/PlayerState.h"
+#include "OmokPlayerState.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class OMOK_API AOmokPlayerState : public APlayerState
+{
+	GENERATED_BODY()
+
+public:
+	AOmokPlayerState();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerRPC_DeliverMessage(const FText& InText);
+
+	UFUNCTION(Client, Unreliable)
+	void ClientRPC_DeliverMessage(const FText& InText, const uint8 SenderColor);
+
+	const uint8 GetbWhite() const;
+};

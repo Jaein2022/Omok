@@ -23,8 +23,7 @@ public:
 
 
 public:
-	FORCEINLINE void SetColor(const uint8 InbWhite) { bWhite = InbWhite; }
-	FORCEINLINE uint8 GetColor() const { return bWhite; }
+
 
 
 
@@ -56,10 +55,5 @@ private:
 
 
 private:
-	UPROPERTY(Replicated)
-	uint8 bWhite: 1;
-
-	//UFUNCTION()
-	//void TestFunction();
 
 };

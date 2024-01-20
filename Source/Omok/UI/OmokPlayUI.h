@@ -7,7 +7,7 @@
 #include "OmokPlayUI.generated.h"
 
 /**
- * 
+ * 플레이 레벨 UI
  */
 UCLASS()
 class OMOK_API UOmokPlayUI : public UUserWidget
@@ -15,17 +15,18 @@ class OMOK_API UOmokPlayUI : public UUserWidget
 	GENERATED_BODY()
 
 public:
-
+	void DisplayReceivedMessage(const FText& InText, const uint8 bColor);
 
 
 
 public: 
-	FORCEINLINE const TObjectPtr<class UEditableTextBox> GetChattingInputbox() const { return ChattingInputBox; }
-
+	FORCEINLINE const TObjectPtr<class UEditableTextBox> GetMessageInputbox() const { return MessageInputBox; }
 	FORCEINLINE const TObjectPtr<class UButton> GetSendButton() const { return SendButton; }
 	FORCEINLINE const TObjectPtr<class UTextBlock> GetBlackTimer() const { return BlackTimer; }
 	FORCEINLINE const TObjectPtr<class UTextBlock> GetWhiteTimer() const { return WhiteTimer; }
-	FORCEINLINE void SetColot(const bool bWhite) { bPlayerColor = bWhite; }
+	FORCEINLINE void SetOwningPlayerColor(const uint8 InbWhite) { bOwningPlayerColor = InbWhite; }
+
+
 
 protected:
 	virtual void NativeConstruct() override;
@@ -34,18 +35,19 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnTextCommitted_DisplayMessage(const FText& InText, ETextCommit::Type CommitMethod);
+	void OnTextCommitted_DisplayMessage(const FText& InText, ETextCommit::Type CommitType);
 
 	UFUNCTION()
 	void OnClickedSendButton_DisplayMessage();
 
 
+
 private:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UScrollBox> ChattingScrollBox;
+	TObjectPtr<class UScrollBox> MessageScrollBox;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UEditableTextBox> ChattingInputBox;
+	TObjectPtr<class UEditableTextBox> MessageInputBox;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> SendButton;
@@ -59,6 +61,6 @@ private:
 
 
 private:
-	bool bPlayerColor;	//true: 백색.
+	uint8 bOwningPlayerColor;	//true: 백색.
 	
 };
