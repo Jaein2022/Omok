@@ -2,12 +2,18 @@
 
 
 #include "OmokPlayerController.h"
+#include "OmokPlayerState.h"
+#include "OmokPlayer.h"
 #include "Omok/UI/OmokLobbyUI.h"
 #include "Omok/UI/OmokHostingUI.h"
 #include "Omok/UI/OmokPlayUI.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Omok/OmokGameModeBase.h"
+#include "GameFramework/PlayerState.h"
+#include "GameFramework/GameState.h"
+#include "Omok/Omok.h"
+#include "Net/UnrealNetwork.h"
 
 AOmokPlayerController::AOmokPlayerController()
 {
@@ -46,6 +52,16 @@ void AOmokPlayerController::FlickerReadyButton()
 	HostingUI->SetFlickeringOn();
 }
 
+void AOmokPlayerController::ReceiveMessage(const FText& InText, const uint8 SenderColor)
+{
+	PlayUI->DisplayReceivedMessage(InText, SenderColor);
+}
+
+void AOmokPlayerController::SetMessageColor(const uint8 InbWhite)
+{
+	PlayUI->SetOwningPlayerColor(InbWhite);
+}
+
 void AOmokPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -56,6 +72,10 @@ void AOmokPlayerController::BeginPlay()
 	}
 	
 	//GEngine->OnNetworkFailure().AddUObject(this, &AOmokPlayerController::NetworkFailureTestFunc);
+
+	//auto temp = GetPlayerState<APlayerState>()->GetPlayerName();
+	//auto temp1 = GetPlayerState<APlayerState>()->GetUniqueId().GetUniqueNetId()->ToString();
+	//auto temp2 = GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId()->ToString();
 
 	const FString CurrentWorldName = GetWorld()->GetName();
 	if(CurrentWorldName == TEXT("Lobby"))
@@ -88,9 +108,21 @@ void AOmokPlayerController::BeginPlay()
 	else if(CurrentWorldName == TEXT("PlayLevel"))
 	{
 		PlayUI = CastChecked<UOmokPlayUI>(CreateWidget(this, PlayUIClass));
-
+		PlayUI->GetMessageInputbox()->OnTextCommitted.AddDynamic(this, &AOmokPlayerController::OnTextCommitted_SendMessage);
+		PlayUI->GetSendButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::OnClickedSendButton_SendMessage);
 		PlayUI->AddToViewport();
+
+		if(HasAuthority())
+		{
+			PlayUI->SetOwningPlayerColor(bWhite);
+		}
 	}
+}
+
+void AOmokPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AOmokPlayerController, bWhite, COND_AutonomousOnly);
 }
 
 void AOmokPlayerController::StartHosting()
@@ -148,4 +180,25 @@ void AOmokPlayerController::QuitGame()
 void AOmokPlayerController::ServerRPC_NotifyOnReadied_Implementation()
 {
 	GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->SetClientReady(this);
+}
+
+void AOmokPlayerController::OnTextCommitted_SendMessage(const FText& InText, ETextCommit::Type CommitType)
+{
+	if(ETextCommit::Type::OnEnter != CommitType)
+	{
+		return;
+	}
+
+	GetPlayerState<AOmokPlayerState>();
+}
+
+void AOmokPlayerController::OnClickedSendButton_SendMessage()
+{
+	const FText Message = PlayUI->GetMessageInputbox()->GetText();
+	GetPlayerState<AOmokPlayerState>();
+}
+
+void AOmokPlayerController::OnRep_bWhite()
+{
+	PlayUI->SetOwningPlayerColor(bWhite);
 }

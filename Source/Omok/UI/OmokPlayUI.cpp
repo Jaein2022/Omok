@@ -7,16 +7,29 @@
 #include "Components/ScrollBox.h"
 #include "Omok/UI/OmokTextBlock.h"
 
+void UOmokPlayUI::DisplayReceivedMessage(const FText& InText, const uint8 bColor)
+{
+	TObjectPtr<UOmokTextBlock> Message = NewObject<UOmokTextBlock>(this);
+
+	Message->SetMessageAndConfig(
+		InText,
+		MessageScrollBox->GetCachedGeometry().GetLocalSize().X * 0.9f,
+		bColor
+	);
+
+	MessageScrollBox->AddChild(Message);
+	MessageInputBox->SetText(FText());
+}
+
 void UOmokPlayUI::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	ensure(ChattingScrollBox);
+	ensure(MessageScrollBox);
 
-	ensure(ChattingInputBox);
-	ChattingInputBox->OnTextCommitted.AddDynamic(this, &UOmokPlayUI::OnTextCommitted_DisplayMessage);
-	ChattingInputBox->SetClearKeyboardFocusOnCommit(false);
-	//ChattingInputBox->SetSelectAllTextWhenFocused(true);
+	ensure(MessageInputBox);
+	MessageInputBox->OnTextCommitted.AddDynamic(this, &UOmokPlayUI::OnTextCommitted_DisplayMessage);
+	MessageInputBox->SetClearKeyboardFocusOnCommit(false);
 
 	ensure(SendButton);
 	SendButton->OnClicked.AddDynamic(this, &UOmokPlayUI::OnClickedSendButton_DisplayMessage);
@@ -26,40 +39,36 @@ void UOmokPlayUI::NativeConstruct()
 	ensure(WhiteTimer);
 }
 
-void UOmokPlayUI::OnTextCommitted_DisplayMessage(const FText& InText, ETextCommit::Type CommitMethod)
+void UOmokPlayUI::OnTextCommitted_DisplayMessage(const FText& InText, ETextCommit::Type CommitType)
 {
-	if(ETextCommit::Type::OnEnter != CommitMethod)
+	if(ETextCommit::Type::OnEnter != CommitType)
 	{
 		return;
 	}
 
-	TObjectPtr<UOmokTextBlock> Message = NewObject<UOmokTextBlock>(this);
+	TObjectPtr<UOmokTextBlock> MessageBlock = NewObject<UOmokTextBlock>(this);
 	
-	Message->SetMessage(
+	MessageBlock->SetMessageAndConfig(
 		InText,
-		ChattingScrollBox->GetCachedGeometry().GetLocalSize().X * 0.9f,
-		bPlayerColor
+		MessageScrollBox->GetCachedGeometry().GetLocalSize().X * 0.9f,
+		bOwningPlayerColor
 	);
-	
-	//auto temp = ChattingScrollBox->GetCachedGeometry().GetLocalSize();
-	//auto temp1 = ChattingScrollBox->GetCachedGeometry().GetAbsoluteSize();
-	//auto temp2 = ChattingScrollBox->GetDesiredSize();
 
-	ChattingScrollBox->AddChild(Message);
-	ChattingInputBox->SetText(FText());
+	MessageScrollBox->AddChild(MessageBlock);
+	MessageInputBox->SetText(FText());
 	//ChattingScrollBox->RemoveChild();
 }
 
 void UOmokPlayUI::OnClickedSendButton_DisplayMessage()
 {
-	TObjectPtr<UOmokTextBlock> Message = NewObject<UOmokTextBlock>(this);
+	TObjectPtr<UOmokTextBlock> MessageBlock = NewObject<UOmokTextBlock>(this);
 
-	Message->SetMessage(
-		ChattingInputBox->GetText(),
-		ChattingScrollBox->GetCachedGeometry().GetLocalSize().X * 0.9f,
-		bPlayerColor
+	MessageBlock->SetMessageAndConfig(
+		MessageInputBox->GetText(),
+		MessageScrollBox->GetCachedGeometry().GetLocalSize().X * 0.9f,
+		bOwningPlayerColor
 	);
 
-	ChattingScrollBox->AddChild(Message);
-	ChattingInputBox->SetText(FText());
+	MessageScrollBox->AddChild(MessageBlock);
+	MessageInputBox->SetText(FText());
 }

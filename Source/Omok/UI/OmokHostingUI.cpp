@@ -108,7 +108,7 @@ void UOmokHostingUI::NativeConstruct()
 		bCanBindAll					//true: 바인드 할 수 있는 IP주소만 가져온다. false: 전부 다 가져온다.
 	)->ToString(false /*false: 포트는 생략한다.*/);
 
-	HostIPAddressBlock->SetText(FText::FromString(TEXT("Host IP: ") + HostIP));
+	HostIPAddressBlock->SetText(FText::FromString(TEXT("Host IP : ") + HostIP));
 
 	ensure(ReadyButton);
 	ReadyButton->OnClicked.AddDynamic(this, &UOmokHostingUI::OnClickedReadyButton);

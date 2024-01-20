@@ -30,9 +30,9 @@ public:
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
-	void SetServerReady(TObjectPtr<class AOmokPlayerController> InOmokPC);
-	void SetClientReady(TObjectPtr<class AOmokPlayerController> InOmokPC);
-
+	void SetServerReady(TObjectPtr<class AOmokPlayerController> ThisOmokPC);
+	void SetClientReady(TObjectPtr<class AOmokPlayerController> ThisOmokPC);
+	
 
 
 protected:

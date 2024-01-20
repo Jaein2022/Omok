@@ -7,7 +7,7 @@
 #include "OmokPlayerController.generated.h"
 
 /**
- * 서버 생성/접속 관리 및 UI 입력처리 클래스.
+ * 서버 접속 관리 및 UI 입력처리 클래스.
  */
 UCLASS()
 class OMOK_API AOmokPlayerController : public APlayerController
@@ -24,8 +24,24 @@ public:
 	//Ready 버튼을 깜빡거리게 하는 함수.
 	void FlickerReadyButton();
 
+	void ReceiveMessage(const FText& InText, const uint8 SenderColor);
+
+	void SetMessageColor(const uint8 InbWhite);
+
+
+
+public:
+	FORCEINLINE void SetbWhite(const uint8 InbWhite) { bWhite = InbWhite; }
+	FORCEINLINE const uint8 GetbWhite() const { return bWhite; }
+
+
+
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+
 
 private:
 	//호스팅 시작 함수.
@@ -60,6 +76,12 @@ private:
 	UFUNCTION(Server, Unreliable)
 	void ServerRPC_NotifyOnReadied();
 
+	UFUNCTION()
+	void OnTextCommitted_SendMessage(const FText& InText, ETextCommit::Type CommitType);
+
+	UFUNCTION()
+	void OnClickedSendButton_SendMessage();
+
 
 
 private:
@@ -71,4 +93,13 @@ private:
 
 	TSubclassOf<class UUserWidget> PlayUIClass;
 	TObjectPtr<class UOmokPlayUI> PlayUI;
+
+
+
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_bWhite)
+	uint8 bWhite:1;
+
+	UFUNCTION()
+	void OnRep_bWhite();
 };

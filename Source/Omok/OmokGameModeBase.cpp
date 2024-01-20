@@ -2,8 +2,9 @@
 
 
 #include "OmokGameModeBase.h"
-#include "Board/OmokBoard.h"
+#include "OmokGameStateBase.h"
 #include "Player/OmokPlayer.h"
+#include "Player/OmokPlayerState.h"
 #include "Player/OmokPlayerController.h"
 #include "Engine/Engine.h"
 #include "Omok.h"
@@ -14,6 +15,8 @@ AOmokGameModeBase::AOmokGameModeBase()
 {
 	DefaultPawnClass = AOmokPlayer::StaticClass();
 	PlayerControllerClass = AOmokPlayerController::StaticClass();
+	PlayerStateClass = AOmokPlayerState::StaticClass();
+	GameStateClass = AOmokGameStateBase::StaticClass();
 	
 	bServerReady = false;
 	bClientReady = false;
@@ -50,11 +53,12 @@ void AOmokGameModeBase::PostLogin(APlayerController* NewPlayer)
 		return;
 	}
 
-	CastChecked<AOmokPlayerController>(NewPlayer)->GetPawn<AOmokPlayer>()->SetColor(bWhite);
+	CastChecked<AOmokPlayerController>(NewPlayer)->SetbWhite(bWhite);
+	FOmokDevelopmentSupport::DisplayDebugMessageForActors(NewPlayer, __FUNCTION__, TEXT("ColorTest"), 30.f, bWhite ? FColor::White : FColor::Black);
 	bWhite = !bWhite;
 }
 
-void AOmokGameModeBase::SetServerReady(TObjectPtr<AOmokPlayerController> InOmokPC)
+void AOmokGameModeBase::SetServerReady(TObjectPtr<AOmokPlayerController> ThisOmokPC)
 {
 	if(bServerReady)
 	{
@@ -73,7 +77,7 @@ void AOmokGameModeBase::SetServerReady(TObjectPtr<AOmokPlayerController> InOmokP
 	{
 		for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
 		{
-			if(it->Get() == InOmokPC)
+			if(it->Get() == ThisOmokPC)
 			{
 				continue;
 			}
@@ -84,7 +88,7 @@ void AOmokGameModeBase::SetServerReady(TObjectPtr<AOmokPlayerController> InOmokP
 	}
 }
 
-void AOmokGameModeBase::SetClientReady(TObjectPtr<AOmokPlayerController> InOmokPC)
+void AOmokGameModeBase::SetClientReady(TObjectPtr<AOmokPlayerController> ThisOmokPC)
 {
 	if(bClientReady)
 	{
@@ -103,7 +107,7 @@ void AOmokGameModeBase::SetClientReady(TObjectPtr<AOmokPlayerController> InOmokP
 	{
 		for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
 		{
-			if(it->Get() == InOmokPC)
+			if(it->Get() == ThisOmokPC)
 			{
 				continue;
 			}
