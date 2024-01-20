@@ -6,9 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "OmokLobbyUI.generated.h"
 
-/**
- * 로비 UI 클래스.
- */
+//로비 UI 클래스.
 UCLASS()
 class OMOK_API UOmokLobbyUI : public UUserWidget
 {

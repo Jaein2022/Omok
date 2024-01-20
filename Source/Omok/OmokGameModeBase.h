@@ -6,9 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "OmokGameModeBase.generated.h"
 
-/**
- * 
- */
+//
 UCLASS()
 class OMOK_API AOmokGameModeBase : public AGameModeBase
 {

@@ -6,9 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "OmokPlayerState.generated.h"
 
-/**
- * 
- */
+//
 UCLASS()
 class OMOK_API AOmokPlayerState : public APlayerState
 {

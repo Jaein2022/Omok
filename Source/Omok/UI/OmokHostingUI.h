@@ -6,9 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "OmokHostingUI.generated.h"
 
-/**
- * 호스팅 UI 클래스.
- */
+//호스팅 UI 클래스.
 UCLASS()
 class OMOK_API UOmokHostingUI : public UUserWidget
 {

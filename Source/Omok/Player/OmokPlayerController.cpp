@@ -127,7 +127,6 @@ void AOmokPlayerController::BeginPlay()
 void AOmokPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	//DOREPLIFETIME_CONDITION(AOmokPlayerController, bWhite, COND_AutonomousOnly);
 }
 
 void AOmokPlayerController::StartHosting()
