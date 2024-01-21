@@ -7,6 +7,17 @@
 #include "OmokBoard.h"
 #include "OmokNode.generated.h"
 
+UENUM()
+enum class ENodeColor: uint8
+{
+	Black,
+	White,
+	ClearBlack,
+	ClearWhite,
+	Transparent,
+	Invalid
+};
+
 //바둑알.
 UCLASS()
 class OMOK_API AOmokNode : public AActor
@@ -20,17 +31,24 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void SetNodeColor(ENodeColor NewColor);
+	void SetClearColor(const uint8 InbWhite);
+
+	void ReturnColor();
+
+	void FixColor(const uint8 InbWhite);
 
 	void SetCoordinate(const int32 X, const int32 Y);
 
 	void SetNodeScale(const float InScale);
 
+
+	
+
 public:
-	FORCEINLINE const ENodeColor GetNodeColor() const { return CurrentColor; }
 	FORCEINLINE const FIntVector2& GetCoordinate() const { return Coordinate; }
-
-
+	FORCEINLINE TObjectPtr<UStaticMeshComponent> GetNodeMesh() const { return NodeMesh; }
+	FORCEINLINE const ENodeColor GetColor() const { return Color; }
+	FORCEINLINE const bool IsFixed() const { return bFixed; }
 
 
 protected:
@@ -39,16 +57,8 @@ protected:
 
 
 
-//private:
-//	UFUNCTION()
-//	void OnBeginCursorOverlap(UPrimitiveComponent* ClickedComponent);
-//
-//	UFUNCTION()
-//	void OnEndCursorOverlap(UPrimitiveComponent* ClickedComponent);
-//
-//	UFUNCTION()
-//	void OnClicked(UPrimitiveComponent* ClickedComponent, const FKey PressedButton);
-
+private:
+	void SetNodeColor(ENodeColor NewColor);
 
 
 protected:
@@ -74,15 +84,11 @@ protected:
 
 
 private:
-
-	//TObjectPtr<AOmokBoard> Board;
-
-	//FScriptDelegate BeginCursorOverlapDelegate;
-	//FScriptDelegate EndCursorOverlapDelegate;
-	//FScriptDelegate ClickDelegate;
-
-	ENodeColor CurrentColor;	//현재 노드 색상.
+	ENodeColor Color;	//현재 노드 색상.
 	FIntVector2 Coordinate;	//노드 좌표. X++이 위, Y++이 오른쪽.
 
-	bool IsFixed;	//노드 색상 고정 됨/안됨.
+	bool bFixed;	//노드 색상 고정 됨/안됨.
+
+
+
 };

@@ -2,6 +2,7 @@
 
 
 #include "OmokPlayer.h"
+#include "OmokPlayerState.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -21,21 +22,6 @@ AOmokPlayer::AOmokPlayer(const FObjectInitializer& ObjectInitializer):
 	OmokPlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("OmokCamera"));
 	OmokPlayerCamera->SetupAttachment(this->RootComponent);
 	OmokPlayerCamera->SetProjectionMode(ECameraProjectionMode::Orthographic);
-
-	//static ConstructorHelpers::FObjectFinder<UInputAction> OmokCheckMouseLocationRef(
-	//	TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokCheckMouseLocation.IA_OmokCheckMouseLocation'")
-	//);
-	//ensure(OmokCheckMouseLocationRef.Succeeded());
-	//OmokCheckMouseLocation = OmokCheckMouseLocationRef.Object;
-
-	//static ConstructorHelpers::FObjectFinder<UInputAction> OmokMouseClickRef(
-	//	TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokMouseClick.IA_OmokMouseClick'")
-	//);
-	//ensure(OmokMouseClickRef.Succeeded());
-	//OmokMouseClick = OmokMouseClickRef.Object;
-
-
-	bReplicates = true;
 }
 
 // Called every frame
@@ -49,12 +35,13 @@ void AOmokPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//바둑판, 바둑알은 유저 로컬 머신에 하나씩만 존재해야 한다.
+	//바둑판, 바둑알은 플레이어 로컬 머신에 하나씩만 존재해야 한다.
 	if(false == IsLocallyControlled())
 	{
 		return;
 	}
 
+	//바둑판은 플레이레벨에만 필요.
 	if(TEXT("PlayLevel") != GetWorld()->GetName())
 	{
 		return;
@@ -63,38 +50,47 @@ void AOmokPlayer::BeginPlay()
 	FActorSpawnParameters BoardSpawnParams;
 	BoardSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	BoardSpawnParams.Owner = this;
+
 	const FVector BoardSpawnLocation = GetActorLocation() 
 		+ (GetActorForwardVector() * BoardLocationFromPlayer.X) 
 		+ (-GetActorRightVector() * BoardLocationFromPlayer.Y);
+
 	const FRotator BoardSpawnRotation = GetActorUpVector().Rotation();
 
 	Board = GetWorld()->SpawnActor<AOmokBoard>(BoardSpawnLocation, BoardSpawnRotation, BoardSpawnParams);
+
+	for(TObjectPtr<AOmokNode> Node : Board->GetAllNodes())
+	{
+		Node->GetNodeMesh()->OnBeginCursorOver.AddDynamic(this, &AOmokPlayer::OnBeginCursorOver_SetClearColor);
+		Node->GetNodeMesh()->OnEndCursorOver.AddDynamic(this, &AOmokPlayer::OnEndCursorOver_ReturnColor);
+		Node->GetNodeMesh()->OnClicked.AddDynamic(this, &AOmokPlayer::OnClicked_FixColor);
+	}
 }
 
-void AOmokPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AOmokPlayer::OnBeginCursorOver_SetClearColor(UPrimitiveComponent* TouchedComponent)
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	CastChecked<AOmokNode>(TouchedComponent->GetOwner())->SetClearColor(
+		GetPlayerStateChecked<AOmokPlayerState>()->GetbWhite()
+	);
 }
 
-void AOmokPlayer::OnBeginCursorOverlap_ChangeColor(UPrimitiveComponent* ClickedComponent)
+void AOmokPlayer::OnEndCursorOver_ReturnColor(UPrimitiveComponent* TouchedComponent)
 {
-	//CastChecked<AOmokNode>(ClickedComponent)
-}
-
-void AOmokPlayer::OnEndCursorOverlap_ReturnColor(UPrimitiveComponent* ClickedComponent)
-{
+	CastChecked<AOmokNode>(TouchedComponent->GetOwner())->ReturnColor();
 }
 
 void AOmokPlayer::OnClicked_FixColor(UPrimitiveComponent* ClickedComponent, const FKey PressedButton)
 {
-}
+	//우클릭은 무시.
+	if(EKeys::RightMouseButton == PressedButton)
+	{
+		return;
+	}
 
-//void AOmokPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-//{
-//	Super::SetupPlayerInputComponent(PlayerInputComponent);
-//
-//	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-//
-//	//InputComponent->BindAction(OmokCheckMouseLocation, ETriggerEvent::Ongoing, this, );
-//	//InputComponent->BindAction(OmokMouseClick, ETriggerEvent::Triggered, this, );
-//}
+	TObjectPtr<AOmokNode> OmokNode = CastChecked<AOmokNode>(ClickedComponent->GetOwner());
+	TObjectPtr<AOmokPlayerState> OmokPlayerState = GetPlayerStateChecked<AOmokPlayerState>();
+
+	OmokNode->FixColor(OmokPlayerState->GetbWhite());
+
+	OmokPlayerState->ServerRPC_DeliverNodeCoord(OmokNode->GetCoordinate());
+}

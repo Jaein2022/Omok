@@ -11,7 +11,7 @@ AOmokNode::AOmokNode()
 	PrimaryActorTick.bCanEverTick = true;
 	//얘도 틱 필요 없을것 같은데.
 
-	IsFixed = false;
+	bFixed = false;
 	//처음에는 고정시키면 안됨.
 
 	this->NodeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("NodeMesh"));
@@ -21,7 +21,6 @@ AOmokNode::AOmokNode()
 	);
 	ensure(NodeMeshRef.Succeeded());
 	NodeMesh->SetStaticMesh(NodeMeshRef.Object);
-	//NodeMesh->SetWorldScale3D(FVector(0.1f, 0.1f, 0.1f));
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> BlackMaterialRef(
 		TEXT("/Script/Engine.Material'/Game/Assets/TempNodeMaterial/M_Black.M_Black'")
@@ -54,26 +53,6 @@ AOmokNode::AOmokNode()
 	TransparentMaterial = TransparentMaterialRef.Object;
 
 	SetNodeColor(ENodeColor::Transparent);
-
-	//BeginCursorOverlapDelegate.BindUFunction(this, GET_FUNCTION_NAME_STRING_CHECKED(AOmokNode, OnBeginCursorOverlap));
-	//NodeMesh->OnBeginCursorOver.Add(BeginCursorOverlapDelegate);
-
-	//EndCursorOverlapDelegate.BindUFunction(this, GET_FUNCTION_NAME_STRING_CHECKED(AOmokNode, OnEndCursorOverlap));
-	//NodeMesh->OnEndCursorOver.Add(EndCursorOverlapDelegate);
-	//
-	//ClickDelegate.BindUFunction(this, GET_FUNCTION_NAME_STRING_CHECKED(AOmokNode, OnClicked));
-	//NodeMesh->OnClicked.Add(ClickDelegate);
-
-}
-
-// Called when the game starts or when spawned
-void AOmokNode::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	//NodeMesh->OnBeginCursorOver.AddDynamic(this, &AOmokNode::OnBeginCursorOverlap);
-	//NodeMesh->OnEndCursorOver.AddDynamic(this, &AOmokNode::OnEndCursorOverlap);
-	//NodeMesh->OnClicked.AddDynamic(this, &AOmokNode::OnClicked);
 }
 
 // Called every frame
@@ -83,24 +62,64 @@ void AOmokNode::Tick(float DeltaTime)
 
 }
 
+void AOmokNode::SetClearColor(const uint8 InbWhite)
+{
+	SetNodeColor(InbWhite ? ENodeColor::ClearWhite : ENodeColor::ClearBlack);
+}
+
+void AOmokNode::ReturnColor()
+{
+	SetNodeColor(ENodeColor::Transparent);
+}
+
+void AOmokNode::FixColor(const uint8 InbWhite)
+{
+	SetNodeColor(InbWhite ? ENodeColor::White : ENodeColor::Black);
+}
+
+void AOmokNode::SetCoordinate(const int32 X, const int32 Y)
+{
+	Coordinate.X = X;
+	Coordinate.Y = Y;
+}
+
+void AOmokNode::SetNodeScale(const float InScale)
+{
+	NodeMesh->SetRelativeScale3D(FVector(InScale, InScale, InScale));
+}
+
+// Called when the game starts or when spawned
+void AOmokNode::BeginPlay()
+{
+	Super::BeginPlay();
+
+}
+
 void AOmokNode::SetNodeColor(ENodeColor NewColor)
 {
-	CurrentColor = NewColor;
+	if(bFixed)
+	{
+		return;
+	}
 
-	switch(CurrentColor)
+	Color = NewColor;
+
+	switch(Color)
 	{
 	case ENodeColor::Black:
 	{
+		bFixed = true;
 		NodeMesh->SetMaterial(0, BlackMaterial);
 		break;
 	}
 
 	case ENodeColor::White:
 	{
+		bFixed = true;
 		NodeMesh->SetMaterial(0, WhiteMaterial);
 		break;
 	}
-		
+
 	case ENodeColor::ClearBlack:
 	{
 		NodeMesh->SetMaterial(0, ClearBlackMaterial);
@@ -129,56 +148,6 @@ void AOmokNode::SetNodeColor(ENodeColor NewColor)
 		check(false);
 		break;
 	}
-}
-
-//void AOmokNode::OnBeginCursorOverlap(UPrimitiveComponent* ClickedComponent)
-//{
-//	ensure(this->NodeMesh == ClickedComponent);
-//
-//	if(true == IsFixed)
-//	{
-//		return;
-//	}
-//
-//	SetNodeColor(ENodeColor::ClearBlack);
-//}
-//
-//void AOmokNode::OnEndCursorOverlap(UPrimitiveComponent* ClickedComponent)
-//{
-//	ensure(this->NodeMesh == ClickedComponent);
-//
-//	if(true == IsFixed)
-//	{
-//		return;
-//	}
-//
-//	SetNodeColor(ENodeColor::Transparent);
-//}
-//
-//void AOmokNode::OnClicked(UPrimitiveComponent* ClickedComponent, const FKey PressedButton)
-//{
-//	ensure(this->NodeMesh == ClickedComponent);
-//	
-//	if(true == IsFixed)
-//	{
-//		return;
-//	}
-//
-//	SetNodeColor(ENodeColor::Black);
-//
-//	IsFixed = true;
-//	Board->CheckWinningCondition(this);
-//}
-
-void AOmokNode::SetCoordinate(const int32 X, const int32 Y)
-{
-	Coordinate.X = X;
-	Coordinate.Y = Y;
-}
-
-void AOmokNode::SetNodeScale(const float InScale)
-{
-	NodeMesh->SetRelativeScale3D(FVector(InScale, InScale, InScale));
 }
 
 

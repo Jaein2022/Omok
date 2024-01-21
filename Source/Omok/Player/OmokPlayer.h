@@ -22,7 +22,7 @@ public:
 
 
 public:
-
+	FORCEINLINE TObjectPtr<class AOmokBoard> GetBoard() const { return Board; } 
 
 
 
@@ -30,33 +30,22 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	//// Called to bind functionality to input
-	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	TObjectPtr<class UCameraComponent> OmokPlayerCamera;
 
-	TObjectPtr<class AOmokBoard> Board;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-	//TObjectPtr<class UInputAction> OmokCheckMouseLocation;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-	//TObjectPtr<class UInputAction> OmokMouseClick;
+	TObjectPtr<class AOmokBoard> Board;	//바둑판.
 
 
 
 private:
 	UFUNCTION()
-	void OnBeginCursorOverlap_ChangeColor(UPrimitiveComponent* ClickedComponent);
+	void OnBeginCursorOver_SetClearColor(UPrimitiveComponent* TouchedComponent);
 
 	UFUNCTION()
-	void OnEndCursorOverlap_ReturnColor(UPrimitiveComponent* ClickedComponent);
+	void OnEndCursorOver_ReturnColor(UPrimitiveComponent* TouchedComponent);
 
 	UFUNCTION()
 	void OnClicked_FixColor(UPrimitiveComponent* ClickedComponent, const FKey PressedButton);
@@ -64,7 +53,7 @@ private:
 
 
 private:
-	const FVector2D BoardLocationFromPlayer;
+	const FVector2D BoardLocationFromPlayer;	//바둑판 배치 위치.
 
 
 };

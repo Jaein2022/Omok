@@ -43,14 +43,20 @@ void AOmokBoard::Tick(float DeltaTime)
 
 }
 
+void AOmokBoard::FixNodeColor(const FIntVector2& InCoord, const uint8 InbWhite) const
+{
+	GetNode(InCoord)->FixColor(InbWhite);
+}
+
 bool AOmokBoard::CheckWinningCondition(const TObjectPtr<AOmokNode> Node)
 {
 	ensure(HasAuthority());
 	ensure(IsValid(Node));
+	ensure(Node->IsFixed());
 
 	const int32 X = Node->GetCoordinate().X;
 	const int32 Y = Node->GetCoordinate().Y;
-	const ENodeColor Color = Node->GetNodeColor();
+	const uint8 Color = Node->GetColor() == ENodeColor::White ? true : false;
 
 	//이번 돌에서 연결되는 직선들 중 가장 긴 것의 길이.
 	const int32 LineLength = 1 + FMath::Max(
@@ -81,10 +87,10 @@ void AOmokBoard::BeginPlay()
 	CreateAllNodes();
 }
 
-int32 AOmokBoard::CountNodes(
+const int32 AOmokBoard::CountNodes(
 	const int32 X,
 	const int32 Y,
-	const ENodeColor Color,
+	const uint8 InbWhite,
 	const int8 XDir,
 	const int8 YDir
 ) const
@@ -93,8 +99,6 @@ int32 AOmokBoard::CountNodes(
 	ensure(1 >= FMath::Abs(YDir));
 	//XDir, YDir은 -1, 0, 1만 허용.
 
-	ensure(Color == ENodeColor::Black || Color == ENodeColor::White);
-	//Color는 Black과 White만 허용.
 
 	if(0 > X || 15 <= X || 0 > Y || 15 <= Y)
 	{
@@ -104,8 +108,9 @@ int32 AOmokBoard::CountNodes(
 	int32 CoordX = X;
 	int32 CoordY = Y;
 	int32 Length = 0;
+	const ENodeColor Color = InbWhite ? ENodeColor::White : ENodeColor::Black;
 
-	while(GetNode(CoordX, CoordY)->GetNodeColor() == Color)
+	while(GetNode(CoordX, CoordY)->GetColor() == Color)
 	{
 		Length++;
 
