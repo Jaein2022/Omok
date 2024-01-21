@@ -21,7 +21,11 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void ClientRPC_DeliverMessage(const FText& InText, const uint8 SenderColor);
 
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_DeliverNodeCoord(const FIntVector2& InCoord);
 
+	UFUNCTION(Client, Reliable)
+	void ClientRPC_DeliverNodeCoord(const FIntVector2& InCoord, const uint8 SenderColor);
 
 public:
 	FORCEINLINE void SetbWhite(const uint8 InbWhite) { bWhite = InbWhite; }

@@ -6,7 +6,6 @@
 #include "GameFramework/GameStateBase.h"
 #include "OmokGameStateBase.generated.h"
 
-//
 UCLASS()
 class OMOK_API AOmokGameStateBase : public AGameStateBase
 {
@@ -18,7 +17,8 @@ public:
 	//전달받은 메세지를 송신자 제외한 나머지 플레이어 스테이트에 배분하는 함수. 
 	void DistributeMessage(const FText& InText, const TObjectPtr<class AOmokPlayerState> Sender);
 
-
+	//플레이어가 놓은 바둑알 위치를 나머지 플레이어 스테이트에 배분하는 함수. 
+	void DistributeNodeCoord(const FIntVector2& InCoord, const TObjectPtr<class AOmokPlayerState> Sender);
 	
 protected:
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

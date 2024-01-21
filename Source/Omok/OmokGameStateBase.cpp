@@ -11,7 +11,9 @@ AOmokGameStateBase::AOmokGameStateBase()
 }
 
 void AOmokGameStateBase::DistributeMessage(const FText& InText, const TObjectPtr<AOmokPlayerState> Sender)
-{
+{	
+	ensure(HasAuthority());
+
 	for(TObjectPtr<APlayerState> PS : PlayerArray)
 	{
 		if(PS == Sender)
@@ -20,6 +22,21 @@ void AOmokGameStateBase::DistributeMessage(const FText& InText, const TObjectPtr
 		}
 
 		CastChecked<AOmokPlayerState>(PS)->ClientRPC_DeliverMessage(InText, Sender->GetbWhite());
+	}
+}
+
+void AOmokGameStateBase::DistributeNodeCoord(const FIntVector2& InCoord, const TObjectPtr<class AOmokPlayerState> Sender)
+{
+	ensure(HasAuthority());
+
+	for(TObjectPtr<APlayerState> PS : PlayerArray)
+	{
+		if(PS == Sender)
+		{
+			continue;
+		}
+
+		CastChecked<AOmokPlayerState>(PS)->ClientRPC_DeliverNodeCoord(InCoord, Sender->GetbWhite());
 	}
 }
 

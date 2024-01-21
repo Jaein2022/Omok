@@ -6,17 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "OmokBoard.generated.h"
 
-UENUM()
-enum class ENodeColor: uint8
-{
-	Black,
-	White,
-	ClearBlack,
-	ClearWhite,
-	Transparent,
-	Invalid
-};
-
 //바둑판.
 UCLASS()
 class OMOK_API AOmokBoard : public AActor
@@ -30,7 +19,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-
+	void FixNodeColor(const FIntVector2& InCoord, const uint8 InbWhite) const;
 
 public:
 	//같은색 바둑알이 5개 이상 연속으로 놓여 있는지 확인하는 함수. 서버 전용.
@@ -41,7 +30,7 @@ public:
 public:	
 	FORCEINLINE TObjectPtr<class AOmokNode> GetNode(const int32 X, const int32 Y) const { return AllNodes[X * 15 + Y]; }
 	FORCEINLINE TObjectPtr<class AOmokNode> GetNode(const FIntVector2 Coord) const { return AllNodes[Coord.X * 15 + Coord.Y]; }
-	FORCEINLINE TArray<TObjectPtr<class AOmokNode>>& GetAllNodes() { return AllNodes; }
+	FORCEINLINE const TArray<TObjectPtr<class AOmokNode>>& GetAllNodes() { return AllNodes; }
 
 
 
@@ -57,7 +46,7 @@ protected:
 	* @param XDir: 1: 위쪽, -1: 아래쪽. 1, 0, -1만 입력할 것.
 	* @param YDir: 1: 오른쪽, -1: 왼쪽. 1, 0, -1만 입력할 것.
 	*/
-	int32 CountNodes(const int32 X, const int32 Y, const ENodeColor Color, const int8 XDir, const int8 YDir) const;
+	const int32 CountNodes(const int32 X, const int32 Y, const uint8 InbWhite, const int8 XDir, const int8 YDir) const;
 
 
 

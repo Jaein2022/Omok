@@ -2,10 +2,12 @@
 
 
 #include "OmokPlayerState.h"
+#include "OmokPlayer.h"
 #include "OmokPlayerController.h"
 #include "Omok/OmokGameStateBase.h"
 #include "Omok/Omok.h"
 #include "Net/UnrealNetwork.h"
+#include "Omok/Board/OmokBoard.h"
 
 AOmokPlayerState::AOmokPlayerState()
 {
@@ -20,6 +22,19 @@ void AOmokPlayerState::ServerRPC_DeliverMessage_Implementation(const FText& InTe
 void AOmokPlayerState::ClientRPC_DeliverMessage_Implementation(const FText& InText, const uint8 SenderColor)
 {
 	CastChecked<AOmokPlayerController>(GetOwningController())->ReceiveMessage(InText, SenderColor);
+}
+
+void AOmokPlayerState::ServerRPC_DeliverNodeCoord_Implementation(const FIntVector2& InCoord)
+{
+	GetWorld()->GetGameState<AOmokGameStateBase>()->DistributeNodeCoord(InCoord, this);
+}
+
+void AOmokPlayerState::ClientRPC_DeliverNodeCoord_Implementation(const FIntVector2& InCoord, const uint8 SenderColor)
+{
+	if(GetPawn()->IsLocallyControlled())
+	{
+		GetPawn<AOmokPlayer>()->GetBoard()->FixNodeColor(InCoord, SenderColor);
+	}
 }
 
 void AOmokPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
