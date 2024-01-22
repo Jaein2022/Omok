@@ -28,17 +28,17 @@ public:
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
-	void SetServerReady(TObjectPtr<class AOmokPlayerController> ThisOmokPC);
-	void SetClientReady(TObjectPtr<class AOmokPlayerController> ThisOmokPC);
-	
+	void SetServerReady(const TObjectPtr<class AOmokPlayerController> ThisOmokPC);
 
+	void SetClientReady(const TObjectPtr<class AOmokPlayerController> ThisOmokPC);
 
-protected:
+	void BroadcastWinner(const TObjectPtr<class APlayerController> Winner);
 
 
 
 private:
+	const int32 PlayerLimit = 2;	//플레이어 숫자 제한.
 	bool bServerReady;
 	bool bClientReady;
-	bool bWhite;
+	uint8 bWhite_Initialization: 1;	//새로 로그인하는 플레이어에게 부여할 색상.
 };

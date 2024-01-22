@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "OmokBoard.h"
 #include "OmokNode.generated.h"
 
 UENUM()
@@ -46,7 +45,6 @@ public:
 
 public:
 	FORCEINLINE const FIntVector2& GetCoordinate() const { return Coordinate; }
-	FORCEINLINE TObjectPtr<UStaticMeshComponent> GetNodeMesh() const { return NodeMesh; }
 	FORCEINLINE const ENodeColor GetColor() const { return Color; }
 	FORCEINLINE const bool IsFixed() const { return bFixed; }
 

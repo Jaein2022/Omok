@@ -6,9 +6,7 @@
 #include "Player/OmokPlayer.h"
 #include "Player/OmokPlayerState.h"
 #include "Player/OmokPlayerController.h"
-#include "Engine/Engine.h"
 #include "Omok.h"
-#include "GameDelegates.h"
 #include "GameFramework/GameState.h"
 
 AOmokGameModeBase::AOmokGameModeBase()
@@ -20,7 +18,8 @@ AOmokGameModeBase::AOmokGameModeBase()
 	
 	bServerReady = false;
 	bClientReady = false;
-	bWhite = FMath::RandBool();
+
+	bWhite_Initialization = FMath::RandBool();
 }
 
 APlayerController* AOmokGameModeBase::Login(
@@ -34,8 +33,8 @@ APlayerController* AOmokGameModeBase::Login(
 {
 	APlayerController* NewPC = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
 
-	//세번째 플레이어는 받지 않는다.
-	if(2 < GetWorld()->GetNumPlayerControllers())
+	//PlayerLimit를 넘어서는 숫자의 플레이어는 받지 않는다.
+	if(PlayerLimit < GetWorld()->GetNumPlayerControllers())
 	{
 		ErrorMessage = TEXT("The third Player is not acceptable for this game.");
 		return nullptr;
@@ -54,11 +53,11 @@ void AOmokGameModeBase::PostLogin(APlayerController* NewPlayer)
 	}
 
 	//플레이어별 색상 배정.
-	CastChecked<AOmokPlayerController>(NewPlayer)->GetPlayerState<AOmokPlayerState>()->SetbWhite(bWhite);
-	bWhite = !bWhite;
+	NewPlayer->GetPlayerState<AOmokPlayerState>()->SetbWhite(bWhite_Initialization);
+	bWhite_Initialization = ~bWhite_Initialization;
 }
 
-void AOmokGameModeBase::SetServerReady(TObjectPtr<AOmokPlayerController> ThisOmokPC)
+void AOmokGameModeBase::SetServerReady(const TObjectPtr<AOmokPlayerController> ThisOmokPC)
 {
 	if(bServerReady)
 	{
@@ -82,13 +81,13 @@ void AOmokGameModeBase::SetServerReady(TObjectPtr<AOmokPlayerController> ThisOmo
 				continue;
 			}
 
-			//클라이언트의 Ready 버튼을 깜빡거리게 한다.
+			//상대의 Ready 버튼을 깜빡거리게 한다.
 			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_FlickerReadyButton();
 		}
 	}
 }
 
-void AOmokGameModeBase::SetClientReady(TObjectPtr<AOmokPlayerController> ThisOmokPC)
+void AOmokGameModeBase::SetClientReady(const TObjectPtr<AOmokPlayerController> ThisOmokPC)
 {
 	if(bClientReady)
 	{
@@ -112,8 +111,23 @@ void AOmokGameModeBase::SetClientReady(TObjectPtr<AOmokPlayerController> ThisOmo
 				continue;
 			}
 
-			//서버의 Ready 버튼을 깜빡거리게 한다.
-			CastChecked<AOmokPlayerController>(it->Get())->FlickerReadyButton();
+			//상대의 Ready 버튼을 깜빡거리게 한다.
+			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_FlickerReadyButton();
+		}
+	}
+}
+
+void AOmokGameModeBase::BroadcastWinner(const TObjectPtr<APlayerController> Winner)
+{
+	for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
+	{
+		if(Winner == it->Get())
+		{
+			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_DisplayWinUI();
+		}
+		else
+		{
+			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_DisplayLoseUI();
 		}
 	}
 }

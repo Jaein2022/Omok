@@ -48,46 +48,7 @@ void AOmokBoard::FixNodeColor(const FIntVector2& InCoord, const uint8 InbWhite) 
 	GetNode(InCoord)->FixColor(InbWhite);
 }
 
-bool AOmokBoard::CheckWinningCondition(const TObjectPtr<AOmokNode> Node)
-{
-	ensure(HasAuthority());
-	ensure(IsValid(Node));
-	ensure(Node->IsFixed());
-
-	const int32 X = Node->GetCoordinate().X;
-	const int32 Y = Node->GetCoordinate().Y;
-	const uint8 Color = Node->GetColor() == ENodeColor::White ? true : false;
-
-	//이번 돌에서 연결되는 직선들 중 가장 긴 것의 길이.
-	const int32 LineLength = 1 + FMath::Max(
-		TArray<int32>({
-			CountNodes(X, Y + 1, Color, 0, 1) + CountNodes(X, Y - 1, Color, 0, -1),
-			//수평 체크.
-
-			CountNodes(X + 1, Y, Color, 1, 0) + CountNodes(X - 1, Y, Color, -1, 0),
-			//수직 체크.
-
-			CountNodes(X + 1, Y + 1, Color, 1, 1) + CountNodes(X - 1, Y - 1, Color, -1, -1),
-			//사선 / 체크.
-
-			CountNodes(X + 1, Y - 1, Color, 1, -1) + CountNodes(X - 1, Y + 1, Color, -1, 1)
-			//사선 \ 체크.
-		})
-	);
-
-	//같은색 돌이 5개 이상 연속되면 승리 처리.
-	return (5 <= LineLength) ? true : false;
-}
-
-// Called when the game starts or when spawned
-void AOmokBoard::BeginPlay()
-{
-	Super::BeginPlay();
-
-	CreateAllNodes();
-}
-
-const int32 AOmokBoard::CountNodes(
+const int32 AOmokBoard::CountSameColorNodes(
 	const int32 X,
 	const int32 Y,
 	const uint8 InbWhite,
@@ -125,6 +86,14 @@ const int32 AOmokBoard::CountNodes(
 	}
 
 	return Length;
+}
+
+// Called when the game starts or when spawned
+void AOmokBoard::BeginPlay()
+{
+	Super::BeginPlay();
+
+	CreateAllNodes();
 }
 
 void AOmokBoard::CreateAllNodes()
