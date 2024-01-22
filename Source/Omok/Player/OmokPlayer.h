@@ -21,6 +21,7 @@ public:
 
 	//InbWhite 색상의 플레이어가 승리 조건을 달성했는지 확인하는 함수. 서버 전용.
 	bool CheckWinningCondition(const FIntVector2& InCoord, const uint8 InbWhite) const;
+	//로직 변경 예정.
 
 	virtual void OnRep_PlayerState() override;
 

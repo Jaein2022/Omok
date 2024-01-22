@@ -39,6 +39,8 @@ bool AOmokPlayer::CheckWinningCondition(const FIntVector2& InCoord, const uint8 
 		ensure(ENodeColor::Black == OmokBoard->GetNode(InCoord)->GetColor());
 	}
 	
+	//로직 변경 예정.
+
 	const int32 X = InCoord.X;
 	const int32 Y = InCoord.Y;
 

@@ -58,7 +58,7 @@ void AOmokGameStateBase::DistributeNodeCoord(const FIntVector2& InCoord, const T
 		CastChecked<AOmokPlayerState>(PS)->ClientRPC_DeliverNodeCoord(InCoord, Sender->GetbWhite());
 	}
 
-	//서버에서 승리 조건을 충족했는지 판별한다.
+	//서버에서 승리 조건을 달성했는지 판별한다.
 	if(ServerPlayerState->IsWinner(InCoord, Sender->GetbWhite()))
 	{
 		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->BroadcastWinner(Sender->GetPlayerController());
@@ -91,10 +91,21 @@ void AOmokGameStateBase::HandleBeginPlay()
 		30.f,
 		CurrentPlayerColor == 2 ? FColor::Red : FColor::Blue
 	);
-
+	
 	PrevPlayerColor = FMath::RandBool();
-	GetWorldTimerManager().SetTimer(GameStateTimerHandle, PlayTimerDelegate, RestTimeLimit, false);
+	GetWorldTimerManager().SetTimer(GameStateTimerHandle, PlayTimerDelegate, RestTime, false);
+}
 
+void AOmokGameStateBase::UpdateServerTimeSeconds()
+{
+	Super::UpdateServerTimeSeconds();
+	OnUpdateServerWorldTimeSeconds.Broadcast(GetServerWorldTimeSeconds());
+}
+
+void AOmokGameStateBase::OnRep_ReplicatedWorldTimeSeconds()
+{
+	Super::OnRep_ReplicatedWorldTimeSeconds();
+	OnUpdateServerWorldTimeSeconds.Broadcast(GetServerWorldTimeSeconds());
 }
 
 void AOmokGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -105,7 +116,10 @@ void AOmokGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 void AOmokGameStateBase::ShiftToPlay()
 {
+	ensure(HasAuthority());
+
 	CurrentPlayerColor = PrevPlayerColor == 1 ? 0 : 1;	//이전 색상의 반대색으로 설정.
+	OnShiftedCurrentPlayerColor.Broadcast(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
 	PrevPlayerColor = CurrentPlayerColor;
 
 	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
@@ -117,12 +131,15 @@ void AOmokGameStateBase::ShiftToPlay()
 	);
 
 	GetWorldTimerManager().ClearTimer(GameStateTimerHandle);
-	GetWorldTimerManager().SetTimer(GameStateTimerHandle, RestTimerDelegate, PlayTimeLimit, false);
+	GetWorldTimerManager().SetTimer(GameStateTimerHandle, RestTimerDelegate, PlayTime, false);
 }
 
 void AOmokGameStateBase::ShiftToRest()
 {
+	ensure(HasAuthority());
+
 	CurrentPlayerColor = 2;
+	OnShiftedCurrentPlayerColor.Broadcast(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
 
 	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
 		this,
@@ -132,5 +149,10 @@ void AOmokGameStateBase::ShiftToRest()
 	);
 
 	GetWorldTimerManager().ClearTimer(GameStateTimerHandle);
-	GetWorldTimerManager().SetTimer(GameStateTimerHandle, PlayTimerDelegate, RestTimeLimit, false);
+	GetWorldTimerManager().SetTimer(GameStateTimerHandle, PlayTimerDelegate, RestTime, false);
+}
+
+void AOmokGameStateBase::OnRep_CurrentPlayerColor()
+{
+	OnShiftedCurrentPlayerColor.Broadcast(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
 }

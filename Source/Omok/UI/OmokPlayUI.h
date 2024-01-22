@@ -15,14 +15,20 @@ class OMOK_API UOmokPlayUI : public UUserWidget
 public:
 	void DisplayReceivedMessage(const FText& InText, const uint8 bColor);
 
+	UFUNCTION()
+	void ResetTimer(const uint8 InCurrentPlayerColor, const float ServerWorldTimeSeconds, const float PlayTime);
+
+	UFUNCTION()
+	void UpdateTimerWithServer(const float ServerWorldTimeSeconds);
+
+	void UpdateTimerWithLocalDeltaTime(const float LocalDeltaSeconds);
+
 
 
 public: 
 	FORCEINLINE const TObjectPtr<class UEditableTextBox> GetMessageInputbox() const { return MessageInputBox; }
 	FORCEINLINE const TObjectPtr<class UButton> GetSendButton() const { return SendButton; }
-	FORCEINLINE const TObjectPtr<class UTextBlock> GetBlackTimer() const { return BlackTimer; }
-	FORCEINLINE const TObjectPtr<class UTextBlock> GetWhiteTimer() const { return WhiteTimer; }
-	FORCEINLINE void SetOwningPlayerColor(const uint8 InbWhite) { bOwningPlayerColor = InbWhite; }
+	FORCEINLINE void SetOwningPlayerColor(const uint8 InbWhite) { bWhite_OwningPlayer = InbWhite; }
 
 
 
@@ -49,16 +55,17 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> SendButton;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UTextBlock> BlackTimer;
 	
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UTextBlock> WhiteTimer;
+	TObjectPtr<class UTextBlock> CurrentRemainingTimeText;
 
+	float RemainingTime;
+	float PrevServerWorldTimeSeconds;
+	float CurrentServerWorldTimeSeconds;
+	uint8 CurrentPlayerColor;
 
 
 private:
-	uint8 bOwningPlayerColor;	//true: 백색.
+	uint8 bWhite_OwningPlayer: 1;	//true: 백색.
 	
 };

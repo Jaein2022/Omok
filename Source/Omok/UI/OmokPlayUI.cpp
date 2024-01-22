@@ -21,6 +21,74 @@ void UOmokPlayUI::DisplayReceivedMessage(const FText& InText, const uint8 bColor
 	MessageInputBox->SetText(FText());
 }
 
+void UOmokPlayUI::ResetTimer(const uint8 InCurrentPlayerColor, const float ServerWorldTimeSeconds, const float PlayTime)
+{
+	CurrentPlayerColor = InCurrentPlayerColor;
+	
+	if(2 == CurrentPlayerColor)
+	{
+		RemainingTime -= ServerWorldTimeSeconds - PrevServerWorldTimeSeconds;
+		if(0.f > RemainingTime)
+		{
+			CurrentRemainingTimeText->SetText(FText::FromString(TEXT("0.00")));
+		}
+		else
+		{
+			CurrentRemainingTimeText->SetText(FText::FromString(FString::Printf(TEXT("%.2f"), RemainingTime)));
+		}
+		return;
+	}
+
+	RemainingTime = PlayTime;
+
+	CurrentRemainingTimeText->SetColorAndOpacity(CurrentPlayerColor == 1 ? FColor::White : FColor::Black);
+	CurrentRemainingTimeText->SetText(FText::FromString(FString::Printf(TEXT("%.2f"), RemainingTime)));
+
+	PrevServerWorldTimeSeconds = ServerWorldTimeSeconds;
+}
+
+void UOmokPlayUI::UpdateTimerWithServer(const float ServerWorldTimeSeconds)
+{
+	if(2 == CurrentPlayerColor)
+	{
+		return;
+	}
+
+	RemainingTime -= ServerWorldTimeSeconds - PrevServerWorldTimeSeconds;
+
+	if(0.f > RemainingTime)
+	{
+		CurrentRemainingTimeText->SetText(FText::FromString(TEXT("0.00")));
+	}
+	else
+	{
+		CurrentRemainingTimeText->SetText(FText::FromString(FString::Printf(TEXT("%.2f"), RemainingTime)));
+	}
+	
+	PrevServerWorldTimeSeconds = ServerWorldTimeSeconds;
+}
+
+void UOmokPlayUI::UpdateTimerWithLocalDeltaTime(const float LocalDeltaSeconds)
+{
+	if(2 == CurrentPlayerColor)
+	{
+		return;
+	}
+
+	RemainingTime -= LocalDeltaSeconds;
+
+	if(0.f > RemainingTime)
+	{
+		CurrentRemainingTimeText->SetText(FText::FromString(TEXT("0.00")));
+	}
+	else
+	{
+		CurrentRemainingTimeText->SetText(FText::FromString(FString::Printf(TEXT("%.2f"), RemainingTime)));
+	}
+
+	PrevServerWorldTimeSeconds += LocalDeltaSeconds;
+}
+
 void UOmokPlayUI::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -34,9 +102,7 @@ void UOmokPlayUI::NativeConstruct()
 	ensure(SendButton);
 	SendButton->OnClicked.AddDynamic(this, &UOmokPlayUI::OnClickedSendButton_DisplayMessage);
 
-	ensure(BlackTimer);
-
-	ensure(WhiteTimer);
+	ensure(CurrentRemainingTimeText);
 }
 
 void UOmokPlayUI::OnTextCommitted_DisplayMessage(const FText& InText, ETextCommit::Type CommitType)
@@ -51,7 +117,7 @@ void UOmokPlayUI::OnTextCommitted_DisplayMessage(const FText& InText, ETextCommi
 	MessageBlock->SetMessageAndConfig(
 		InText,
 		MessageScrollBox->GetCachedGeometry().GetLocalSize().X * 0.9f,
-		bOwningPlayerColor
+		bWhite_OwningPlayer
 	);
 
 	MessageScrollBox->AddChild(MessageBlock);
@@ -66,7 +132,7 @@ void UOmokPlayUI::OnClickedSendButton_DisplayMessage()
 	MessageBlock->SetMessageAndConfig(
 		MessageInputBox->GetText(),
 		MessageScrollBox->GetCachedGeometry().GetLocalSize().X * 0.9f,
-		bOwningPlayerColor
+		bWhite_OwningPlayer
 	);
 
 	MessageScrollBox->AddChild(MessageBlock);
