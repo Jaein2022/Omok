@@ -10,14 +10,18 @@
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Omok/OmokGameModeBase.h"
+#include "Omok/OmokGameStateBase.h"
 #include "Omok/Omok.h"
 #include "Net/UnrealNetwork.h"
+#include "Engine/World.h"
 
 AOmokPlayerController::AOmokPlayerController()
 {
 	bShowMouseCursor = true;
 	bEnableMouseOverEvents = true;
 	bEnableClickEvents = true;
+
+	PrimaryActorTick.bCanEverTick = true;
 
 	static ConstructorHelpers::FClassFinder<UUserWidget> LobbyUIClassRef(
 		TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/WBP_OmokLobbyUI.WBP_OmokLobbyUI_C'")
@@ -116,6 +120,10 @@ void AOmokPlayerController::BeginPlay()
 		PlayUI->GetSendButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::OnClickedSendButton_SendMessage);
 		PlayUI->AddToViewport();
 
+		GetWorld()->GetGameState<AOmokGameStateBase>()->OnShiftedCurrentPlayerColor.AddUObject(PlayUI, &UOmokPlayUI::ResetTimer);
+		GetWorld()->GetGameState<AOmokGameStateBase>()->OnUpdateServerWorldTimeSeconds.AddUObject(PlayUI, &UOmokPlayUI::UpdateTimerWithServer);
+		
+
 		//로컬 컨트롤러이면서 동시에 서버에서 Authority를 가진 플레이어 컨트롤러 == 리슨서버 자신의 플레이어 컨트롤러. 
 		//리슨서버의 컨트롤러는 이미 플레이어 스테이트의 생성이 끝나고 PostLogin()을 통해 받은 색상을 가져오므로 문제 없지만, 
 		// 클라이언트는 로컬 플레이어 컨트롤러의 BeginPlay() 이후 PostLogin()까지 거친 후에 프록시 플레이어 스테이트가 생성되므로 
@@ -125,6 +133,18 @@ void AOmokPlayerController::BeginPlay()
 			PlayUI->SetOwningPlayerColor(GetPlayerState<AOmokPlayerState>()->GetbWhite());
 		}
 	}
+}
+
+void AOmokPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if(nullptr == PlayUI)
+	{
+		return;
+	}
+
+	PlayUI->UpdateTimerWithLocalDeltaTime(DeltaSeconds);
 }
 
 void AOmokPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
