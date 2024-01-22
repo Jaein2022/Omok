@@ -19,12 +19,15 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void ClientRPC_FlickerReadyButton();
 
-	//Ready 버튼을 깜빡거리게 하는 함수.
-	void FlickerReadyButton();
-
 	void ReceiveMessage(const FText& InText, const uint8 SenderColor);
 
 	void SetMessageColor(const uint8 InbWhite);
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPC_DisplayWinUI();
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPC_DisplayLoseUI();
 
 
 

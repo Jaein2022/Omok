@@ -10,8 +10,6 @@
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Omok/OmokGameModeBase.h"
-#include "GameFramework/PlayerState.h"
-#include "GameFramework/GameState.h"
 #include "Omok/Omok.h"
 #include "Net/UnrealNetwork.h"
 
@@ -47,11 +45,6 @@ void AOmokPlayerController::ClientRPC_FlickerReadyButton_Implementation()
 	HostingUI->SetFlickeringOn();
 }
 
-void AOmokPlayerController::FlickerReadyButton()
-{
-	HostingUI->SetFlickeringOn();
-}
-
 void AOmokPlayerController::ReceiveMessage(const FText& InText, const uint8 SenderColor)
 {
 	PlayUI->DisplayReceivedMessage(InText, SenderColor);
@@ -60,6 +53,16 @@ void AOmokPlayerController::ReceiveMessage(const FText& InText, const uint8 Send
 void AOmokPlayerController::SetMessageColor(const uint8 InbWhite)
 {
 	PlayUI->SetOwningPlayerColor(InbWhite);
+}
+
+void AOmokPlayerController::ClientRPC_DisplayWinUI_Implementation()
+{
+	FOmokDevelopmentSupport::DisplayDebugMessageForActors(this, __FUNCTION__, TEXT("You Win."), 30.f);
+}
+
+void AOmokPlayerController::ClientRPC_DisplayLoseUI_Implementation()
+{
+	FOmokDevelopmentSupport::DisplayDebugMessageForActors(this, __FUNCTION__, TEXT("You Lose."), 30.f);
 }
 
 void AOmokPlayerController::BeginPlay()

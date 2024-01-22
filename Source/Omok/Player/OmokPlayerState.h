@@ -6,7 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "OmokPlayerState.generated.h"
 
-//
+//채팅 메세지, 놓은 바둑돌 좌표 전송 담당 클래스.
 UCLASS()
 class OMOK_API AOmokPlayerState : public APlayerState
 {
@@ -27,10 +27,16 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientRPC_DeliverNodeCoord(const FIntVector2& InCoord, const uint8 SenderColor);
 
+	//InbWhite 색상의 플레이어가 이겼는지 확인하는 함수. 서버 전용.
+	bool IsWinner(const FIntVector2& InCoord, const uint8 InbWhite) const;
+
+	//해당 플레이어 턴이면 true 반환. 
+	bool IsMyTurn() const;
+
+
 public:
 	FORCEINLINE void SetbWhite(const uint8 InbWhite) { bWhite = InbWhite; }
 	FORCEINLINE const uint8 GetbWhite() const { return bWhite; }
-
 
 
 protected:

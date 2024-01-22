@@ -2,12 +2,23 @@
 
 
 #include "OmokGameStateBase.h"
+#include "OmokGameModeBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/OmokPlayerState.h"
+#include "Omok.h"
 
 AOmokGameStateBase::AOmokGameStateBase()
 {
 	bReplicates = true;
+
+	if(false == HasAuthority())
+	{
+		return;
+	}
+
+	CurrentPlayerColor = 2;
+	PlayTimerDelegate.BindUObject(this, &AOmokGameStateBase::ShiftToPlay);
+	RestTimerDelegate.BindUObject(this, &AOmokGameStateBase::ShiftToRest);
 }
 
 void AOmokGameStateBase::DistributeMessage(const FText& InText, const TObjectPtr<AOmokPlayerState> Sender)
@@ -25,23 +36,101 @@ void AOmokGameStateBase::DistributeMessage(const FText& InText, const TObjectPtr
 	}
 }
 
-void AOmokGameStateBase::DistributeNodeCoord(const FIntVector2& InCoord, const TObjectPtr<class AOmokPlayerState> Sender)
+void AOmokGameStateBase::DistributeNodeCoord(const FIntVector2& InCoord, const TObjectPtr<AOmokPlayerState> Sender)
 {
 	ensure(HasAuthority());
 
+	TObjectPtr<AOmokPlayerState> ServerPlayerState = nullptr;
+
 	for(TObjectPtr<APlayerState> PS : PlayerArray)
 	{
+		//서버 플레이어의 플레이어 스테이트만 분리한다.
+		if(PS->GetPawn()->IsLocallyControlled())
+		{
+			ServerPlayerState = CastChecked<AOmokPlayerState>(PS);
+		}
+
 		if(PS == Sender)
 		{
 			continue;
 		}
-
+		
 		CastChecked<AOmokPlayerState>(PS)->ClientRPC_DeliverNodeCoord(InCoord, Sender->GetbWhite());
 	}
+
+	//서버에서 승리 조건을 충족했는지 판별한다.
+	if(ServerPlayerState->IsWinner(InCoord, Sender->GetbWhite()))
+	{
+		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->BroadcastWinner(Sender->GetPlayerController());
+		//
+	}
+	else
+	{
+		ShiftToRest();
+	}
+}
+
+void AOmokGameStateBase::HandleBeginPlay()
+{
+	Super::HandleBeginPlay();
+
+	if(false == HasAuthority())
+	{
+		return;
+	}
+
+	if(TEXT("PlayLevel") != GetWorld()->GetName())
+	{
+		return;
+	}
+
+	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
+		this,
+		__FUNCTION__,
+		TEXT("Shifting Test"),
+		30.f,
+		CurrentPlayerColor == 2 ? FColor::Red : FColor::Blue
+	);
+
+	PrevPlayerColor = FMath::RandBool();
+	GetWorldTimerManager().SetTimer(GameStateTimerHandle, PlayTimerDelegate, RestTimeLimit, false);
+
 }
 
 void AOmokGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AOmokGameStateBase, CurrentPlayerColor);
+}
 
+void AOmokGameStateBase::ShiftToPlay()
+{
+	CurrentPlayerColor = PrevPlayerColor == 1 ? 0 : 1;	//이전 색상의 반대색으로 설정.
+	PrevPlayerColor = CurrentPlayerColor;
+
+	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
+		this,
+		__FUNCTION__,
+		TEXT("Shifting Test"),
+		30.f,
+		CurrentPlayerColor ? FColor::White : FColor::Black
+	);
+
+	GetWorldTimerManager().ClearTimer(GameStateTimerHandle);
+	GetWorldTimerManager().SetTimer(GameStateTimerHandle, RestTimerDelegate, PlayTimeLimit, false);
+}
+
+void AOmokGameStateBase::ShiftToRest()
+{
+	CurrentPlayerColor = 2;
+
+	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
+		this,
+		__FUNCTION__,
+		TEXT("Shifting Test"),
+		30.f
+	);
+
+	GetWorldTimerManager().ClearTimer(GameStateTimerHandle);
+	GetWorldTimerManager().SetTimer(GameStateTimerHandle, PlayTimerDelegate, RestTimeLimit, false);
 }

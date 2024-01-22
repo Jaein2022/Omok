@@ -2,6 +2,7 @@
 
 
 #include "OmokNode.h"
+#include "OmokBoard.h"
 
 
 // Sets default values
