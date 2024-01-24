@@ -6,9 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "OmokLobbyUI.generated.h"
 
-/**
- * 로비 UI 클래스.
- */
+//로비 UI 클래스.
 UCLASS()
 class OMOK_API UOmokLobbyUI : public UUserWidget
 {
@@ -24,6 +22,7 @@ public:
 	FORCEINLINE const TObjectPtr<class UButton> GetHostButton() const { return HostButton; }
 	FORCEINLINE const TObjectPtr<class UButton> GetQuitButton() const { return QuitButton; }
 	FORCEINLINE const TObjectPtr<class UButton> GetEnterButton() const { return EnterButton; }
+	FORCEINLINE const TObjectPtr<class UEditableTextBox> GetIPAddressBox() const { return IPAddressBox; }
 	FORCEINLINE const TObjectPtr<class UButton> GetBackButton() const { return BackButton; }
 	FORCEINLINE static void SwitchToJoinMenu() { bRetunedFromHost = true; }
 

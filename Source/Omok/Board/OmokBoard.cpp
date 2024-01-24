@@ -5,13 +5,10 @@
 #include "OmokNode.h"
 
 // Sets default values
-AOmokBoard::AOmokBoard()
+AOmokBoard::AOmokBoard(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-	//얘가 틱이 필요할까??
-
-	NodeDistance = 235.f;
+	PrimaryActorTick.bCanEverTick = false;
 
 	BoardMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoardMesh"));
 
@@ -22,8 +19,7 @@ AOmokBoard::AOmokBoard()
 	ensure(BoardMesh->SetStaticMesh(BoardMeshRef.Object));
 
 	RootComponent = BoardMesh;
-	//BoardMesh->SetupAttachment(this->RootComponent);
-	BoardMesh->SetRelativeScale3D(FVector(19.f, 19.f, 1.f));
+	BoardMesh->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> LineMaterialRef(
 		TEXT("/Script/Engine.Material'/Game/Assets/Materials/Line.Line'")
@@ -39,6 +35,11 @@ AOmokBoard::AOmokBoard()
 
 }
 
+void AOmokBoard::FixNodeColor(const FIntVector2& InCoord, const uint8 InbWhite) const
+{
+	GetNode(InCoord)->FixColor(InbWhite);
+}
+
 // Called when the game starts or when spawned
 void AOmokBoard::BeginPlay()
 {
@@ -47,40 +48,35 @@ void AOmokBoard::BeginPlay()
 	CreateAllNodes();
 }
 
-// Called every frame
-void AOmokBoard::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void AOmokBoard::CreateAllNodes()
 {
-	const FVector2D InitLocation(-NodeDistance * 7, -NodeDistance * 7);	//좌하단 노드 위치.
+	const FVector2D InitLocation(-NodeDistance * (BoardSize / 2), -NodeDistance * (BoardSize / 2));	//좌하단 노드 위치.
 	FActorSpawnParameters NodeSpawnParams;
 	NodeSpawnParams.Owner = this;
 	NodeSpawnParams.bNoFail = true;
 	NodeSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	const FAttachmentTransformRules NodeAttachmentRules(EAttachmentRule::KeepWorld, false);
+	const FAttachmentTransformRules NodeAttachmentRules(EAttachmentRule::KeepRelative, false);
 
 	AllNodes.Reserve(225);
-	for(int32 x = 0; x < 15; x++)
+	for(int32 x = 0; x < BoardSize; x++)
 	{
-		for(int32 y = 0; y < 15; y++)
+		for(int32 y = 0; y < BoardSize; y++)
 		{
 			const FString NodeName(FString::Printf(TEXT("OmokNode %d, %d"), x, y));
 			NodeSpawnParams.Name = FName(*NodeName);
-
+			
 			TObjectPtr<AOmokNode> NewNode = GetWorld()->SpawnActor<AOmokNode>(
 				FVector(
-					InitLocation.X + (x * NodeDistance) + GetActorLocation().X,
-					InitLocation.Y + (y * NodeDistance) + GetActorLocation().Y,
-					30.f
+					InitLocation.X + (x * NodeDistance), 
+					InitLocation.Y + (y * NodeDistance), 
+					2.5f
 				),
-				FRotator(0, 0, 0),
+				GetActorUpVector().Rotation(),
 				NodeSpawnParams
 			);
+			ensure(NewNode);
+			NewNode->SetNodeScale(0.05f);
 			NewNode->AttachToComponent(this->RootComponent, NodeAttachmentRules);
 			NewNode->SetCoordinate(x, y);
 			NewNode->SetActorLabel(NodeName);
@@ -89,74 +85,4 @@ void AOmokBoard::CreateAllNodes()
 			AllNodes.Push(NewNode);
 		}
 	}
-}
-
-bool AOmokBoard::CheckWinningCondition(const TObjectPtr<AOmokNode> Node)
-{
-	ensure(IsValid(Node));
-
-	const int32 X = Node->GetCoordinate().X;
-	const int32 Y = Node->GetCoordinate().Y;
-	const ENodeColor Color = Node->GetNodeColor();
-
-	//이번 돌에서 연결되는 직선들 중 가장 긴 것의 길이.
-	const int32 LineLength = 1 + FMath::Max(
-		TArray<int32>({
-			CountNodes(X, Y + 1, Color, 0, 1) + CountNodes(X, Y - 1, Color, 0, -1),
-			//수평 체크.
-
-			CountNodes(X + 1, Y, Color, 1, 0) + CountNodes(X - 1, Y, Color, -1, 0),
-			//수직 체크.
-
-			CountNodes(X + 1, Y + 1, Color, 1, 1) + CountNodes(X - 1, Y - 1, Color, -1, -1),
-			//사선 / 체크.
-
-			CountNodes(X + 1, Y - 1, Color, 1, -1) + CountNodes(X - 1, Y + 1, Color, -1, 1)
-			//사선 \ 체크.
-		})
-	);
-
-	//같은색 돌이 5개 이상 연속되면 승리 처리.
-	return (5 <= LineLength) ? true : false;
-}
-
-int32 AOmokBoard::CountNodes(
-	const int32 X,
-	const int32 Y,
-	const ENodeColor Color,
-	const int8 XDir,
-	const int8 YDir
-) const
-{
-	ensure(1 >= FMath::Abs(XDir));
-	ensure(1 >= FMath::Abs(YDir));
-	//XDir, YDir은 -1, 0, 1만 허용.
-
-	ensure(Color == ENodeColor::Black || Color == ENodeColor::White);
-	//Color는 Black과 White만 허용.
-
-	if(0 > X || 15 <= X || 0 > Y || 15 <= Y)
-	{
-		return 0;
-	}
-
-	int32 CoordX = X;
-	int32 CoordY = Y;
-	int32 Length = 0;
-
-	while(GetNode(CoordX, CoordY)->GetNodeColor() == Color)
-	{
-		Length++;
-
-		CoordX += XDir;
-		CoordY += YDir;
-
-		if(0 > CoordX || 15 <= CoordX || 0 > CoordY || 15 <= CoordY)
-		{
-			break;
-			//판을 벗어나면 종료.
-		}
-	}
-
-	return Length;
 }

@@ -6,9 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "OmokPlayerController.generated.h"
 
-/**
- * 서버 생성/접속 관리와 레벨 이동 및 UI 입력처리 클래스.
- */
+//서버 접속 관리 및 UI 입력처리 클래스.
 UCLASS()
 class OMOK_API AOmokPlayerController : public APlayerController
 {
@@ -17,16 +15,29 @@ class OMOK_API AOmokPlayerController : public APlayerController
 public:
 	AOmokPlayerController();
 
-	//클라이언트의 Ready 버튼을 깜빡거리게 하는 함수.
+	//Ready 버튼을 깜빡거리게 하는 함수.
 	UFUNCTION(Client, Unreliable)
 	void ClientRPC_FlickerReadyButton();
 
-	//Ready 버튼을 깜빡거리게 하는 함수.
-	void FlickerReadyButton();
+	void ReceiveMessage(const FText& InText, const uint8 SenderColor);
+
+	void SetMessageColor(const uint8 InbWhite);
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPC_DisplayResult(const uint8 WinnerColor);
+
+
 
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void SetupInputComponent() override;
+
+	virtual void OnRep_PlayerState() override;
 
 
 private:
@@ -38,9 +49,13 @@ private:
 	UFUNCTION()
 	void CancelHosting();
 	
-	//입력받은 IP 주소의 호스트에 클라이언트로 접속하는 함수. 
+	//Enter 버튼을 눌렀을때 입력받은 IP 주소의 호스트에 클라이언트로 접속하는 함수. 
 	UFUNCTION()
-	void ConnectToIPAddress();	
+	void OnClickedEnterButton_Connect();	
+
+	//엔터키를 눌렀을 때 입력된 IP 주소의 호스트에 클라이언트로 접속하는 함수. 
+	UFUNCTION()
+	void OnTextCommitted_Connect(const FText& InText, ETextCommit::Type CommitMethod);
 
 	//클라이언트의 연결 해제 함수.
 	UFUNCTION()
@@ -48,7 +63,7 @@ private:
 
 	//Ready 버튼 눌렀을때 호출되는 함수.
 	UFUNCTION()
-	void OnClickedReadyButton();
+	void NotifyOnReadied();
 
 	//게임 완전 종료 함수.
 	UFUNCTION()
@@ -58,6 +73,14 @@ private:
 	UFUNCTION(Server, Unreliable)
 	void ServerRPC_NotifyOnReadied();
 
+	UFUNCTION()
+	void OnTextCommitted_SendMessage(const FText& InText, ETextCommit::Type CommitType);
+
+	UFUNCTION()
+	void OnClickedSendButton_SendMessage();
+
+	void OnMouseRightClicked();
+
 
 
 private:
@@ -66,4 +89,10 @@ private:
 
 	TSubclassOf<class UUserWidget> HostingUIClass;
 	TObjectPtr<class UOmokHostingUI> HostingUI;
+
+	TSubclassOf<class UUserWidget> PlayUIClass;
+	TObjectPtr<class UOmokPlayUI> PlayUI;
+
+
+
 };
