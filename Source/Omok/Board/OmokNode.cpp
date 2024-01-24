@@ -73,7 +73,7 @@ void AOmokNode::BeginPlay()
 	Super::BeginPlay();
 
 	NodeMaterialInstance = UMaterialInstanceDynamic::Create(
-		LoadObject<UMaterial>(NULL, TEXT("/Script/Engine.Material'/Game/Assets/TempNodeMaterial/M_NodeMaterial.M_NodeMaterial'")),
+		LoadObject<UMaterial>(NULL, TEXT("/Script/Engine.Material'/Game/Assets/Materials/M_NodeMaterial.M_NodeMaterial'")),
 		this
 	);
 
