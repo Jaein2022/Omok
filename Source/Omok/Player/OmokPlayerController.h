@@ -15,7 +15,7 @@ class OMOK_API AOmokPlayerController : public APlayerController
 public:
 	AOmokPlayerController();
 
-	//클라이언트의 Ready 버튼을 깜빡거리게 하는 함수.
+	//Ready 버튼을 깜빡거리게 하는 함수.
 	UFUNCTION(Client, Unreliable)
 	void ClientRPC_FlickerReadyButton();
 
@@ -24,10 +24,7 @@ public:
 	void SetMessageColor(const uint8 InbWhite);
 
 	UFUNCTION(Client, Reliable)
-	void ClientRPC_DisplayWinUI();
-
-	UFUNCTION(Client, Reliable)
-	void ClientRPC_DisplayLoseUI();
+	void ClientRPC_DisplayResult(const uint8 WinnerColor);
 
 
 
@@ -38,6 +35,9 @@ protected:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void SetupInputComponent() override;
+
+	virtual void OnRep_PlayerState() override;
 
 
 private:
@@ -63,7 +63,7 @@ private:
 
 	//Ready 버튼 눌렀을때 호출되는 함수.
 	UFUNCTION()
-	void OnClickedReadyButton();
+	void NotifyOnReadied();
 
 	//게임 완전 종료 함수.
 	UFUNCTION()
@@ -78,6 +78,8 @@ private:
 
 	UFUNCTION()
 	void OnClickedSendButton_SendMessage();
+
+	void OnMouseRightClicked();
 
 
 

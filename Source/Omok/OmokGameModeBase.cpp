@@ -15,11 +15,92 @@ AOmokGameModeBase::AOmokGameModeBase()
 	PlayerControllerClass = AOmokPlayerController::StaticClass();
 	PlayerStateClass = AOmokPlayerState::StaticClass();
 	GameStateClass = AOmokGameStateBase::StaticClass();
-	
+
 	bServerReady = false;
 	bClientReady = false;
 
-	bWhite_Initialization = FMath::RandBool();
+	bWhiteForNewPlayer = FMath::RandBool();
+}
+
+void AOmokGameModeBase::SetServerReady(const TObjectPtr<AOmokPlayerController> ThisOmokPC)
+{
+	if(bServerReady)
+	{
+		return;
+	}
+
+	bServerReady = true;
+
+	if(bServerReady && bClientReady)
+	{
+		ensure(CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true));
+		GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
+		ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
+	}
+	else
+	{
+		for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
+		{
+			if(it->Get() == ThisOmokPC)
+			{
+				continue;
+			}
+
+			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_FlickerReadyButton();
+		}
+	}
+}
+
+void AOmokGameModeBase::SetClientReady(const TObjectPtr<AOmokPlayerController> ThisOmokPC)
+{
+	if(bClientReady)
+	{
+		return;
+	}
+
+	bClientReady = true;
+
+	if(bServerReady && bClientReady)
+	{
+		ensure(CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true));
+		GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
+		ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
+	}
+	else
+	{
+		for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
+		{
+			if(it->Get() == ThisOmokPC)
+			{
+				continue;
+			}
+
+			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_FlickerReadyButton();
+		}
+	}
+}
+
+void AOmokGameModeBase::BroadcastMatchEnd(const TObjectPtr<APlayerController> Winner)
+{
+	for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
+	{
+		CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_DisplayResult(Winner->GetPlayerState<AOmokPlayerState>()->GetbWhite());
+	}
+
+	//FTimerHandle ReturnTimerHandle;
+	//GetWorldTimerManager().SetTimer(
+	//	ReturnTimerHandle,
+	//	FTimerDelegate::CreateLambda(
+	//		[this]()->void
+	//		{
+	//			ensure(CanServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true));
+	//			GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
+	//			ProcessServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true);
+	//		}
+	//	),
+	//	3.f,
+	//	false
+	//);
 }
 
 APlayerController* AOmokGameModeBase::Login(
@@ -53,81 +134,6 @@ void AOmokGameModeBase::PostLogin(APlayerController* NewPlayer)
 	}
 
 	//플레이어별 색상 배정.
-	NewPlayer->GetPlayerState<AOmokPlayerState>()->SetbWhite(bWhite_Initialization);
-	bWhite_Initialization = ~bWhite_Initialization;
-}
-
-void AOmokGameModeBase::SetServerReady(const TObjectPtr<AOmokPlayerController> ThisOmokPC)
-{
-	if(bServerReady)
-	{
-		return;
-	}
-
-	bServerReady = true;
-
-	if(bServerReady && bClientReady)
-	{
-		ensure(CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true));
-		GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
-		ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
-	}
-	else
-	{
-		for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
-		{
-			if(it->Get() == ThisOmokPC)
-			{
-				continue;
-			}
-
-			//상대의 Ready 버튼을 깜빡거리게 한다.
-			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_FlickerReadyButton();
-		}
-	}
-}
-
-void AOmokGameModeBase::SetClientReady(const TObjectPtr<AOmokPlayerController> ThisOmokPC)
-{
-	if(bClientReady)
-	{
-		return;
-	}
-
-	bClientReady = true;
-
-	if(bServerReady && bClientReady)
-	{
-		ensure(CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true));
-		GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
-		ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
-	}
-	else
-	{
-		for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
-		{
-			if(it->Get() == ThisOmokPC)
-			{
-				continue;
-			}
-
-			//상대의 Ready 버튼을 깜빡거리게 한다.
-			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_FlickerReadyButton();
-		}
-	}
-}
-
-void AOmokGameModeBase::BroadcastWinner(const TObjectPtr<APlayerController> Winner)
-{
-	for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
-	{
-		if(Winner == it->Get())
-		{
-			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_DisplayWinUI();
-		}
-		else
-		{
-			CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_DisplayLoseUI();
-		}
-	}
+	NewPlayer->GetPlayerState<AOmokPlayerState>()->SetbWhite(bWhiteForNewPlayer);
+	bWhiteForNewPlayer = ~bWhiteForNewPlayer;
 }

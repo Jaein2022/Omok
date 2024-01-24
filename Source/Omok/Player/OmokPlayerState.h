@@ -27,6 +27,9 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientRPC_DeliverNodeCoord(const FIntVector2& InCoord, const uint8 SenderColor);
 
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_Surrender();
+
 	//InbWhite 색상의 플레이어가 이겼는지 확인하는 함수. 서버 전용.
 	bool IsWinner(const FIntVector2& InCoord, const uint8 InbWhite) const;
 
@@ -40,10 +43,14 @@ public:
 
 
 protected:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	UFUNCTION()
 	void OnRep_bWhite();
+
+
+
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 
 
 
