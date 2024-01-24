@@ -5,7 +5,10 @@
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/ScrollBox.h"
+#include "Components/Image.h"
+#include "Components/Overlay.h"
 #include "Omok/UI/OmokTextBlock.h"
+#include "Omok/Omok.h"
 
 void UOmokPlayUI::DisplayReceivedMessage(const FText& InText, const uint8 bColor)
 {
@@ -21,13 +24,13 @@ void UOmokPlayUI::DisplayReceivedMessage(const FText& InText, const uint8 bColor
 	MessageInputBox->SetText(FText());
 }
 
-void UOmokPlayUI::ResetTimer(const uint8 InCurrentPlayerColor, const float ServerWorldTimeSeconds, const float PlayTime)
+void UOmokPlayUI::ResetTimer(const uint8 InCurrentPlayerColor, const float ServerTimeSeconds, const float PlayTime)
 {
 	CurrentPlayerColor = InCurrentPlayerColor;
 	
 	if(2 == CurrentPlayerColor)
 	{
-		RemainingTime -= ServerWorldTimeSeconds - PrevServerWorldTimeSeconds;
+		RemainingTime -= ServerTimeSeconds - PrevServerTimeSeconds;
 		if(0.f > RemainingTime)
 		{
 			CurrentRemainingTimeText->SetText(FText::FromString(TEXT("0.00")));
@@ -44,17 +47,17 @@ void UOmokPlayUI::ResetTimer(const uint8 InCurrentPlayerColor, const float Serve
 	CurrentRemainingTimeText->SetColorAndOpacity(CurrentPlayerColor == 1 ? FColor::White : FColor::Black);
 	CurrentRemainingTimeText->SetText(FText::FromString(FString::Printf(TEXT("%.2f"), RemainingTime)));
 
-	PrevServerWorldTimeSeconds = ServerWorldTimeSeconds;
+	PrevServerTimeSeconds = ServerTimeSeconds;
 }
 
-void UOmokPlayUI::UpdateTimerWithServer(const float ServerWorldTimeSeconds)
+void UOmokPlayUI::UpdateTimerWithServer(const float ServerTimeSeconds)
 {
 	if(2 == CurrentPlayerColor)
 	{
 		return;
 	}
 
-	RemainingTime -= ServerWorldTimeSeconds - PrevServerWorldTimeSeconds;
+	RemainingTime -= ServerTimeSeconds - PrevServerTimeSeconds;
 
 	if(0.f > RemainingTime)
 	{
@@ -65,7 +68,7 @@ void UOmokPlayUI::UpdateTimerWithServer(const float ServerWorldTimeSeconds)
 		CurrentRemainingTimeText->SetText(FText::FromString(FString::Printf(TEXT("%.2f"), RemainingTime)));
 	}
 	
-	PrevServerWorldTimeSeconds = ServerWorldTimeSeconds;
+	PrevServerTimeSeconds = ServerTimeSeconds;
 }
 
 void UOmokPlayUI::UpdateTimerWithLocalDeltaTime(const float LocalDeltaSeconds)
@@ -86,7 +89,46 @@ void UOmokPlayUI::UpdateTimerWithLocalDeltaTime(const float LocalDeltaSeconds)
 		CurrentRemainingTimeText->SetText(FText::FromString(FString::Printf(TEXT("%.2f"), RemainingTime)));
 	}
 
-	PrevServerWorldTimeSeconds += LocalDeltaSeconds;
+	PrevServerTimeSeconds += LocalDeltaSeconds;
+}
+
+void UOmokPlayUI::SetOwningPlayerColor(const uint8 InbWhite)
+{
+	OwningPlayerColor = InbWhite;
+	PlayerColorPanel->SetColorAndOpacity(OwningPlayerColor ? FColor::White : FColor::Black);
+}
+
+void UOmokPlayUI::SwitchMenu()
+{
+	if(MenuOverlay->GetIsEnabled())
+	{
+		MenuOverlay->SetVisibility(ESlateVisibility::Hidden);
+		MenuOverlay->SetIsEnabled(false);
+	}
+	else
+	{
+		MenuOverlay->SetVisibility(ESlateVisibility::Visible);
+		MenuOverlay->SetIsEnabled(true);
+	}
+}
+
+void UOmokPlayUI::DisplayResult(const uint8 WinnerColor)
+{
+	MatchEndOverlay->SetVisibility(ESlateVisibility::Visible);
+	MatchEndOverlay->SetIsEnabled(true);
+
+	WinnerTextBlock->SetColorAndOpacity(FNodeColor::GetAllNodeColors()[WinnerColor].FixColor);
+
+	if(WinnerColor == OwningPlayerColor)
+	{
+		WinnerTextBlock->SetText(FText::FromString(TEXT("You")));
+		ResultTextBlock->SetText(FText::FromString(TEXT("win!")));
+	}
+	else
+	{
+		WinnerTextBlock->SetText(FNodeColor::GetAllNodeColors()[WinnerColor].Name);
+		ResultTextBlock->SetText(FText::FromString(TEXT("wins")));
+	}
 }
 
 void UOmokPlayUI::NativeConstruct()
@@ -103,6 +145,26 @@ void UOmokPlayUI::NativeConstruct()
 	SendButton->OnClicked.AddDynamic(this, &UOmokPlayUI::OnClickedSendButton_DisplayMessage);
 
 	ensure(CurrentRemainingTimeText);
+
+	ensure(PlayerColorPanel);
+
+	ensure(MenuOverlay);
+	MenuOverlay->SetVisibility(ESlateVisibility::Hidden);
+	MenuOverlay->SetIsEnabled(false);
+
+	ensure(SurrenderButton);
+	SurrenderButton->OnClicked.AddDynamic(this, &UOmokPlayUI::SwitchMenu);
+
+	ensure(ResumeButton);
+	ResumeButton->OnClicked.AddDynamic(this, &UOmokPlayUI::SwitchMenu);
+
+	ensure(MatchEndOverlay);
+	MatchEndOverlay->SetVisibility(ESlateVisibility::Hidden);
+	MatchEndOverlay->SetIsEnabled(false);
+
+	ensure(WinnerTextBlock);
+
+	ensure(ResultTextBlock);
 }
 
 void UOmokPlayUI::OnTextCommitted_DisplayMessage(const FText& InText, ETextCommit::Type CommitType)
@@ -117,7 +179,7 @@ void UOmokPlayUI::OnTextCommitted_DisplayMessage(const FText& InText, ETextCommi
 	MessageBlock->SetMessageAndConfig(
 		InText,
 		MessageScrollBox->GetCachedGeometry().GetLocalSize().X * 0.9f,
-		bWhite_OwningPlayer
+		OwningPlayerColor
 	);
 
 	MessageScrollBox->AddChild(MessageBlock);
@@ -132,7 +194,7 @@ void UOmokPlayUI::OnClickedSendButton_DisplayMessage()
 	MessageBlock->SetMessageAndConfig(
 		MessageInputBox->GetText(),
 		MessageScrollBox->GetCachedGeometry().GetLocalSize().X * 0.9f,
-		bWhite_OwningPlayer
+		OwningPlayerColor
 	);
 
 	MessageScrollBox->AddChild(MessageBlock);

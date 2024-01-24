@@ -11,15 +11,15 @@ class OMOK_API AOmokGameStateBase : public AGameStateBase
 {
 	GENERATED_BODY()
 
-	DECLARE_MULTICAST_DELEGATE_OneParam(
-		FOnUpdatedServerWorldTimeSeconds,
-		const float /*ServerWorldTimeSeconds*/
+	DECLARE_DELEGATE_OneParam(
+		FOnUpdatedServerTimeSeconds,
+		const float /*ServerTimeSeconds*/
 	);
 
-	DECLARE_MULTICAST_DELEGATE_ThreeParams(
+	DECLARE_DELEGATE_ThreeParams(
 		FOnShiftedCurrentPlayerColor,
 		const uint8 /*CurrentPlayerColor*/,
-		const float /*ServerWorldTimeSeconds*/,
+		const float /*ServerTimeSeconds*/,
 		const float /*PlayerTime*/
 	);
 
@@ -32,6 +32,7 @@ public:
 	//플레이어가 놓은 바둑알 위치를 나머지 플레이어 스테이트에 배분하는 함수. 서버 전용.
 	void DistributeNodeCoord(const FIntVector2& InCoord, const TObjectPtr<class AOmokPlayerState> Sender);
 
+	void RequestMatchEnd(const TObjectPtr<class AOmokPlayerState> Surrenderer);
 
 
 public:
@@ -49,8 +50,6 @@ public:
 
 
 protected:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	//플레이 시간으로 전환. 서버 전용.
 	void ShiftToPlay();
 
@@ -60,25 +59,32 @@ protected:
 	UFUNCTION()
 	void OnRep_CurrentPlayerColor();
 
+	void FinishMatch();
+
+
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+
 
 public:
 	const float PlayTime = 10.f;	//턴당 플레이 시간.
 	const float RestTime = 3.f;		//턴당 휴식 시간.
-	FOnUpdatedServerWorldTimeSeconds OnUpdateServerWorldTimeSeconds;
+	FOnUpdatedServerTimeSeconds OnUpdateServerTimeSeconds;
 	FOnShiftedCurrentPlayerColor OnShiftedCurrentPlayerColor;
 
 
 
 private:
-	//0: 검은색, 1: 흰색, 2: 누구 차례도 아님.
+	//현재 플레이중인 플레이어 색상. 0: 검은색, 1: 흰색, 2: 누구 차례도 아님.
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentPlayerColor)
 	uint8 CurrentPlayerColor;	
 		
-	//0: 검은색, 1: 흰색.
+	//이전 플레이했던 플레이어 색상. 0: 검은색, 1: 흰색.
 	uint8 PrevPlayerColor;		
 
-	FTimerDelegate PlayTimerDelegate;
-	FTimerDelegate RestTimerDelegate;
+	FTimerDelegate PlayTimerDelegate;	//ShiftToPlay 함수 연결 델리게이트.
+	FTimerDelegate RestTimerDelegate;	//ShiftToRest 함수 연결 델리게이트.
 
 	FTimerHandle GameStateTimerHandle;
 

@@ -12,34 +12,22 @@
 AOmokPlayer::AOmokPlayer(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	OmokPlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("OmokCamera"));
 	OmokPlayerCamera->SetupAttachment(this->RootComponent);
 	OmokPlayerCamera->SetProjectionMode(ECameraProjectionMode::Orthographic);
 }
 
-// Called every frame
-void AOmokPlayer::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 bool AOmokPlayer::CheckWinningCondition(const FIntVector2& InCoord, const uint8 InbWhite) const
 {
 	ensure(HasAuthority());
+	ensure(OmokBoard->GetNode(InCoord)->IsFixed());
 
-	//InbWhite와 InCoord 좌표의 바둑돌 색은 반드시 같아야 한다.
-	if(InbWhite)
+	if(OmokBoard->GetNode(InCoord)->GetNodeColor() != InbWhite)
 	{
-		ensure(ENodeColor::White == OmokBoard->GetNode(InCoord)->GetColor());
+		return false;
 	}
-	else
-	{
-		ensure(ENodeColor::Black == OmokBoard->GetNode(InCoord)->GetColor());
-	}
-	
-	//로직 변경 예정.
 
 	const int32 X = InCoord.X;
 	const int32 Y = InCoord.Y;
@@ -47,22 +35,32 @@ bool AOmokPlayer::CheckWinningCondition(const FIntVector2& InCoord, const uint8 
 	//이번 돌에서 연결되는 직선들 중 가장 긴 것의 길이.
 	const int32 LineLength = 1 + FMath::Max(
 		TArray<int32>({
-			OmokBoard->CountSameColorNodes(X, Y + 1, InbWhite, 0, 1) + OmokBoard->CountSameColorNodes(X, Y - 1, InbWhite, 0, -1),
+			CountSameColorNodes(X, Y + 1, InbWhite, 0, 1) + CountSameColorNodes(X, Y - 1, InbWhite, 0, -1),
 			//수평 체크.
 
-			OmokBoard->CountSameColorNodes(X + 1, Y, InbWhite, 1, 0) + OmokBoard->CountSameColorNodes(X - 1, Y, InbWhite, -1, 0),
+			CountSameColorNodes(X + 1, Y, InbWhite, 1, 0) + CountSameColorNodes(X - 1, Y, InbWhite, -1, 0),
 			//수직 체크.
 
-			OmokBoard->CountSameColorNodes(X + 1, Y + 1, InbWhite, 1, 1) + OmokBoard->CountSameColorNodes(X - 1, Y - 1, InbWhite, -1, -1),
+			CountSameColorNodes(X + 1, Y + 1, InbWhite, 1, 1) + CountSameColorNodes(X - 1, Y - 1, InbWhite, -1, -1),
 			//사선 / 체크.
 
-			OmokBoard->CountSameColorNodes(X + 1, Y - 1, InbWhite, 1, -1) + OmokBoard->CountSameColorNodes(X - 1, Y + 1, InbWhite, -1, 1)
+			CountSameColorNodes(X + 1, Y - 1, InbWhite, 1, -1) + CountSameColorNodes(X - 1, Y + 1, InbWhite, -1, 1)
 			//사선 \ 체크.
 		})
 	);
 
 	//같은색 돌이 WinningCount 이상 연속되면 승리 처리.
 	return (WinningCount <= LineLength) ? true : false;
+}
+
+const int32 AOmokPlayer::CountSameColorNodes(const int32 X, const int32 Y, const uint8 InbWhite, const int8 XDir, const int8 YDir) const
+{
+	if(OmokBoard->GetNode(X, Y)->GetNodeColor() != InbWhite)
+	{
+		return 0;
+	}
+
+	return 1 + CountSameColorNodes(X + XDir, Y + YDir, InbWhite, XDir, YDir);
 }
 
 void AOmokPlayer::OnRep_PlayerState()
@@ -152,6 +150,12 @@ void AOmokPlayer::OnClicked_FixColor(AActor* ClickedActor, const FKey PressedBut
 	}
 
 	TObjectPtr<AOmokNode> OmokNode = CastChecked<AOmokNode>(ClickedActor);
+
+	//이미 돌이 놓인 자리에 새 돌을 놓을 수 없다.
+	if(true == OmokNode->IsFixed())
+	{
+		return;	
+	}
 
 	OmokNode->FixColor(OmokPlayerState->GetbWhite());
 	OmokPlayerState->ServerRPC_DeliverNodeCoord(OmokNode->GetCoordinate());

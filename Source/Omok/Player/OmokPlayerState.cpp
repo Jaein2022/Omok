@@ -38,6 +38,11 @@ void AOmokPlayerState::ClientRPC_DeliverNodeCoord_Implementation(const FIntVecto
 	}
 }
 
+void AOmokPlayerState::ServerRPC_Surrender_Implementation()
+{	
+	GetWorld()->GetGameState<AOmokGameStateBase>()->RequestMatchEnd(this);
+}
+
 bool AOmokPlayerState::IsWinner(const FIntVector2& InCoord, const uint8 InbWhite) const
 {
 	ensure(HasAuthority());
@@ -50,12 +55,6 @@ bool AOmokPlayerState::IsMyTurn() const
 	return GetWorld()->GetGameState<AOmokGameStateBase>()->GetCurrentPlayerColor() == bWhite;
 }
 
-void AOmokPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(AOmokPlayerState, bWhite, COND_InitialOnly);
-}
-
 void AOmokPlayerState::OnRep_bWhite()
 {
 	//유저의 로컬 플레이어 컨트롤러를 제외한 나머지 플레이어의 컨트롤러는 프록시가 존재하지 않으므로 
@@ -64,4 +63,10 @@ void AOmokPlayerState::OnRep_bWhite()
 	{
 		CastChecked<AOmokPlayerController>(GetOwner())->SetMessageColor(bWhite);
 	}
+}
+
+void AOmokPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AOmokPlayerState, bWhite, COND_InitialOnly);
 }

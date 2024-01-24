@@ -16,25 +16,13 @@ public:
 	// Sets default values for this actor's properties
 	AOmokBoard(const FObjectInitializer& ObjectInitializer);
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	void FixNodeColor(const FIntVector2& InCoord, const uint8 InbWhite) const;
 
-	/**
-	* 주어진 좌표의 돌부터 같은 색의 바둑알이 연속으로 몇개나 있는지 세는 함수.
-	* @param X: 바둑알 X좌표.
-	* @param Y: 바둑알 Y좌표.
-	* @param InbWhite: 바둑알의 색상.
-	* @param XDir: 1: 위쪽, -1: 아래쪽. 1, 0, -1만 입력할 것.
-	* @param YDir: 1: 오른쪽, -1: 왼쪽. 1, 0, -1만 입력할 것.
-	*/
-	const int32 CountSameColorNodes(const int32 X, const int32 Y, const uint8 InbWhite, const int8 XDir, const int8 YDir) const;
 	
 
 public:	
-	FORCEINLINE TObjectPtr<class AOmokNode> GetNode(const int32 X, const int32 Y) const { return AllNodes[X * 15 + Y]; }
-	FORCEINLINE TObjectPtr<class AOmokNode> GetNode(const FIntVector2 Coord) const { return AllNodes[Coord.X * 15 + Coord.Y]; }
+	FORCEINLINE TObjectPtr<class AOmokNode> GetNode(const int32 X, const int32 Y) const { return AllNodes[X * BoardSize + Y]; }
+	FORCEINLINE TObjectPtr<class AOmokNode> GetNode(const FIntVector2 Coord) const { return AllNodes[Coord.X * BoardSize + Coord.Y]; }
 	FORCEINLINE const TArray<TObjectPtr<class AOmokNode>>& GetAllNodes() { return AllNodes; }
 
 
@@ -62,7 +50,7 @@ protected:
 
 private:
 	const float NodeDistance = 12.5f;	//바둑알 간격. 
-
+	const int32 BoardSize = 15;
 
 
 };

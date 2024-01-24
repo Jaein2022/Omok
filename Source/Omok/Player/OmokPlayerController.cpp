@@ -13,7 +13,9 @@
 #include "Omok/OmokGameStateBase.h"
 #include "Omok/Omok.h"
 #include "Net/UnrealNetwork.h"
-#include "Engine/World.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 
 AOmokPlayerController::AOmokPlayerController()
 {
@@ -59,14 +61,11 @@ void AOmokPlayerController::SetMessageColor(const uint8 InbWhite)
 	PlayUI->SetOwningPlayerColor(InbWhite);
 }
 
-void AOmokPlayerController::ClientRPC_DisplayWinUI_Implementation()
+void AOmokPlayerController::ClientRPC_DisplayResult_Implementation(const uint8 WinnerColor)
 {
-	FOmokDevelopmentSupport::DisplayDebugMessageForActors(this, __FUNCTION__, TEXT("You Win."), 30.f);
-}
+	FOmokDevelopmentSupport::DisplayDebugMessageForActors(this, __FUNCTION__, TEXT("Result."), 30.f);
 
-void AOmokPlayerController::ClientRPC_DisplayLoseUI_Implementation()
-{
-	FOmokDevelopmentSupport::DisplayDebugMessageForActors(this, __FUNCTION__, TEXT("You Lose."), 30.f);
+	PlayUI->DisplayResult(WinnerColor);
 }
 
 void AOmokPlayerController::BeginPlay()
@@ -99,7 +98,7 @@ void AOmokPlayerController::BeginPlay()
 	else if(CurrentWorldName == TEXT("HostingLevel"))
 	{
 		HostingUI = CastChecked<UOmokHostingUI>(CreateWidget(this, HostingUIClass));
-		HostingUI->GetReadyButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::OnClickedReadyButton);
+		HostingUI->GetReadyButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::NotifyOnReadied);
 		HostingUI->GetCancelButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::CancelHosting);
 		HostingUI->AddToViewport();
 		HostingUI->SetWaiting();
@@ -120,8 +119,8 @@ void AOmokPlayerController::BeginPlay()
 		PlayUI->GetSendButton()->OnClicked.AddDynamic(this, &AOmokPlayerController::OnClickedSendButton_SendMessage);
 		PlayUI->AddToViewport();
 
-		GetWorld()->GetGameState<AOmokGameStateBase>()->OnShiftedCurrentPlayerColor.AddUObject(PlayUI, &UOmokPlayUI::ResetTimer);
-		GetWorld()->GetGameState<AOmokGameStateBase>()->OnUpdateServerWorldTimeSeconds.AddUObject(PlayUI, &UOmokPlayUI::UpdateTimerWithServer);
+		GetWorld()->GetGameState<AOmokGameStateBase>()->OnShiftedCurrentPlayerColor.BindUObject(PlayUI, &UOmokPlayUI::ResetTimer);
+		GetWorld()->GetGameState<AOmokGameStateBase>()->OnUpdateServerTimeSeconds.BindUObject(PlayUI, &UOmokPlayUI::UpdateTimerWithServer);
 		
 
 		//로컬 컨트롤러이면서 동시에 서버에서 Authority를 가진 플레이어 컨트롤러 == 리슨서버 자신의 플레이어 컨트롤러. 
@@ -131,6 +130,7 @@ void AOmokPlayerController::BeginPlay()
 		if(HasAuthority())
 		{
 			PlayUI->SetOwningPlayerColor(GetPlayerState<AOmokPlayerState>()->GetbWhite());
+			PlayUI->GetSurrenderButton()->OnClicked.AddDynamic(GetPlayerState<AOmokPlayerState>(), &AOmokPlayerState::ServerRPC_Surrender);
 		}
 	}
 }
@@ -150,6 +150,46 @@ void AOmokPlayerController::Tick(float DeltaSeconds)
 void AOmokPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
+void AOmokPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if(GetWorld()->GetName() != TEXT("PlayLevel"))
+	{
+		return;
+	}
+
+	UInputMappingContext* IMC = LoadObject<UInputMappingContext>(
+		NULL,
+		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Player/Input/IMC_OmokPlayerController.IMC_OmokPlayerController'")
+	);
+	ensure(IMC);
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+	Subsystem->ClearAllMappings();
+	Subsystem->AddMappingContext(IMC, 0);
+
+	UInputAction* IA = LoadObject<UInputAction>(
+		NULL,
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/IA_OmokRightClick.IA_OmokRightClick'")
+	);
+	ensure(IA);
+
+	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
+	
+	EnhancedInputComponent->BindAction(IA, ETriggerEvent::Triggered, this, &AOmokPlayerController::OnMouseRightClicked);
+}
+
+void AOmokPlayerController::OnRep_PlayerState()
+{
+	if(TEXT("PlayLevel") != GetWorld()->GetName())
+	{
+		return;
+	}
+
+	PlayUI->GetSurrenderButton()->OnClicked.AddDynamic(GetPlayerState<AOmokPlayerState>(), &AOmokPlayerState::ServerRPC_Surrender);
 }
 
 void AOmokPlayerController::StartHosting()
@@ -187,7 +227,7 @@ void AOmokPlayerController::Disconnect()
 	ClientTravel(TEXT("/Game/Maps/Lobby?Closed"), ETravelType::TRAVEL_Absolute);
 }
 
-void AOmokPlayerController::OnClickedReadyButton()
+void AOmokPlayerController::NotifyOnReadied()
 {
 	if(HasAuthority())
 	{
@@ -223,4 +263,9 @@ void AOmokPlayerController::OnClickedSendButton_SendMessage()
 {
 	const FText Message = PlayUI->GetMessageInputbox()->GetText();
 	GetPlayerState<AOmokPlayerState>()->ServerRPC_DeliverMessage(Message);
+}
+
+void AOmokPlayerController::OnMouseRightClicked()
+{
+	PlayUI->SwitchMenu();
 }

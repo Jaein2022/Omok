@@ -16,20 +16,26 @@ public:
 	void DisplayReceivedMessage(const FText& InText, const uint8 bColor);
 
 	UFUNCTION()
-	void ResetTimer(const uint8 InCurrentPlayerColor, const float ServerWorldTimeSeconds, const float PlayTime);
+	void ResetTimer(const uint8 InCurrentPlayerColor, const float ServerTimeSeconds, const float PlayTime);
 
 	UFUNCTION()
-	void UpdateTimerWithServer(const float ServerWorldTimeSeconds);
+	void UpdateTimerWithServer(const float ServerTimeSeconds);
 
 	void UpdateTimerWithLocalDeltaTime(const float LocalDeltaSeconds);
+
+	void SetOwningPlayerColor(const uint8 InbWhite);
+
+	UFUNCTION()
+	void SwitchMenu();
+
+	void DisplayResult(const uint8 WinnerColor);
 
 
 
 public: 
 	FORCEINLINE const TObjectPtr<class UEditableTextBox> GetMessageInputbox() const { return MessageInputBox; }
 	FORCEINLINE const TObjectPtr<class UButton> GetSendButton() const { return SendButton; }
-	FORCEINLINE void SetOwningPlayerColor(const uint8 InbWhite) { bWhite_OwningPlayer = InbWhite; }
-
+	FORCEINLINE const TObjectPtr<class UButton> GetSurrenderButton() const { return SurrenderButton; }
 
 
 protected:
@@ -56,16 +62,53 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> SendButton;
 	
+
+
+private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTextBlock> CurrentRemainingTimeText;
 
 	float RemainingTime;
-	float PrevServerWorldTimeSeconds;
-	float CurrentServerWorldTimeSeconds;
-	uint8 CurrentPlayerColor;
+
+	float PrevServerTimeSeconds;
+
+	uint8 CurrentPlayerColor;	//현재 플레이중인 플레이어의 색상.
+
 
 
 private:
-	uint8 bWhite_OwningPlayer: 1;	//true: 백색.
+	UPROPERTY(meta = (Bindwidget))
+	TObjectPtr<class UImage> PlayerColorPanel;	//이 UI를 소유하는 플레이어의 색상 표시 패널.
+
+
+
+private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UOverlay> MenuOverlay;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UButton> ResumeButton; 
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UButton> SurrenderButton; 
+	
+
+
+private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UOverlay> MatchEndOverlay; 
+
+	UPROPERTY(meta = (Bindwidget))
+	TObjectPtr<class UTextBlock> WinnerTextBlock;
+	
+	UPROPERTY(meta = (Bindwidget))
+	TObjectPtr<class UTextBlock> ResultTextBlock;
+
+
+
+private:
+	uint8 OwningPlayerColor: 1;	//이 UI를 소유하는 플레이어의 색상. true: 백색.
+
+
 	
 };

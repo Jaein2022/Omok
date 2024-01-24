@@ -61,12 +61,27 @@ void AOmokGameStateBase::DistributeNodeCoord(const FIntVector2& InCoord, const T
 	//서버에서 승리 조건을 달성했는지 판별한다.
 	if(ServerPlayerState->IsWinner(InCoord, Sender->GetbWhite()))
 	{
-		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->BroadcastWinner(Sender->GetPlayerController());
-		//
+		FinishMatch();
+		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->BroadcastMatchEnd(Sender->GetPlayerController());
 	}
 	else
 	{
 		ShiftToRest();
+	}
+}
+
+void AOmokGameStateBase::RequestMatchEnd(const TObjectPtr<class AOmokPlayerState> Surrenderer)
+{
+	FinishMatch();
+
+	for(TObjectPtr<APlayerState> PS : PlayerArray)
+	{
+		if(PS == Surrenderer)
+		{
+			continue;
+		}
+
+		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->BroadcastMatchEnd(PS->GetPlayerController());
 	}
 }
 
@@ -83,14 +98,6 @@ void AOmokGameStateBase::HandleBeginPlay()
 	{
 		return;
 	}
-
-	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
-		this,
-		__FUNCTION__,
-		TEXT("Shifting Test"),
-		30.f,
-		CurrentPlayerColor == 2 ? FColor::Red : FColor::Blue
-	);
 	
 	PrevPlayerColor = FMath::RandBool();
 	GetWorldTimerManager().SetTimer(GameStateTimerHandle, PlayTimerDelegate, RestTime, false);
@@ -99,36 +106,23 @@ void AOmokGameStateBase::HandleBeginPlay()
 void AOmokGameStateBase::UpdateServerTimeSeconds()
 {
 	Super::UpdateServerTimeSeconds();
-	OnUpdateServerWorldTimeSeconds.Broadcast(GetServerWorldTimeSeconds());
+	OnUpdateServerTimeSeconds.ExecuteIfBound(GetServerWorldTimeSeconds());
 }
 
 void AOmokGameStateBase::OnRep_ReplicatedWorldTimeSeconds()
 {
 	Super::OnRep_ReplicatedWorldTimeSeconds();
-	OnUpdateServerWorldTimeSeconds.Broadcast(GetServerWorldTimeSeconds());
-}
-
-void AOmokGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AOmokGameStateBase, CurrentPlayerColor);
+	OnUpdateServerTimeSeconds.ExecuteIfBound(GetServerWorldTimeSeconds());
 }
 
 void AOmokGameStateBase::ShiftToPlay()
 {
 	ensure(HasAuthority());
+	ensure(2 > PrevPlayerColor);
 
 	CurrentPlayerColor = PrevPlayerColor == 1 ? 0 : 1;	//이전 색상의 반대색으로 설정.
-	OnShiftedCurrentPlayerColor.Broadcast(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
+	OnShiftedCurrentPlayerColor.ExecuteIfBound(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
 	PrevPlayerColor = CurrentPlayerColor;
-
-	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
-		this,
-		__FUNCTION__,
-		TEXT("Shifting Test"),
-		30.f,
-		CurrentPlayerColor ? FColor::White : FColor::Black
-	);
 
 	GetWorldTimerManager().ClearTimer(GameStateTimerHandle);
 	GetWorldTimerManager().SetTimer(GameStateTimerHandle, RestTimerDelegate, PlayTime, false);
@@ -139,14 +133,7 @@ void AOmokGameStateBase::ShiftToRest()
 	ensure(HasAuthority());
 
 	CurrentPlayerColor = 2;
-	OnShiftedCurrentPlayerColor.Broadcast(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
-
-	FOmokDevelopmentSupport::DisplayDebugMessageForActors(
-		this,
-		__FUNCTION__,
-		TEXT("Shifting Test"),
-		30.f
-	);
+	OnShiftedCurrentPlayerColor.ExecuteIfBound(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
 
 	GetWorldTimerManager().ClearTimer(GameStateTimerHandle);
 	GetWorldTimerManager().SetTimer(GameStateTimerHandle, PlayTimerDelegate, RestTime, false);
@@ -154,5 +141,21 @@ void AOmokGameStateBase::ShiftToRest()
 
 void AOmokGameStateBase::OnRep_CurrentPlayerColor()
 {
-	OnShiftedCurrentPlayerColor.Broadcast(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
+	OnShiftedCurrentPlayerColor.ExecuteIfBound(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
+}
+
+void AOmokGameStateBase::FinishMatch()
+{
+	ensure(HasAuthority());
+
+	CurrentPlayerColor = 2;
+	OnShiftedCurrentPlayerColor.ExecuteIfBound(CurrentPlayerColor, GetServerWorldTimeSeconds(), PlayTime);
+
+	GetWorldTimerManager().ClearTimer(GameStateTimerHandle);
+}
+
+void AOmokGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AOmokGameStateBase, CurrentPlayerColor);
 }

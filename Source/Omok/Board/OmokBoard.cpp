@@ -8,8 +8,7 @@
 AOmokBoard::AOmokBoard(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-	//얘가 틱이 필요할까??
+	PrimaryActorTick.bCanEverTick = false;
 
 	BoardMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoardMesh"));
 
@@ -36,56 +35,9 @@ AOmokBoard::AOmokBoard(const FObjectInitializer& ObjectInitializer): Super(Objec
 
 }
 
-// Called every frame
-void AOmokBoard::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void AOmokBoard::FixNodeColor(const FIntVector2& InCoord, const uint8 InbWhite) const
 {
 	GetNode(InCoord)->FixColor(InbWhite);
-}
-
-const int32 AOmokBoard::CountSameColorNodes(
-	const int32 X,
-	const int32 Y,
-	const uint8 InbWhite,
-	const int8 XDir,
-	const int8 YDir
-) const
-{
-	ensure(1 >= FMath::Abs(XDir));
-	ensure(1 >= FMath::Abs(YDir));
-	//XDir, YDir은 -1, 0, 1만 허용.
-
-
-	if(0 > X || 15 <= X || 0 > Y || 15 <= Y)
-	{
-		return 0;
-	}
-
-	int32 CoordX = X;
-	int32 CoordY = Y;
-	int32 Length = 0;
-	const ENodeColor Color = InbWhite ? ENodeColor::White : ENodeColor::Black;
-
-	while(GetNode(CoordX, CoordY)->GetColor() == Color)
-	{
-		Length++;
-
-		CoordX += XDir;
-		CoordY += YDir;
-
-		if(0 > CoordX || 15 <= CoordX || 0 > CoordY || 15 <= CoordY)
-		{
-			break;
-			//판을 벗어나면 종료.
-		}
-	}
-
-	return Length;
 }
 
 // Called when the game starts or when spawned
@@ -98,7 +50,7 @@ void AOmokBoard::BeginPlay()
 
 void AOmokBoard::CreateAllNodes()
 {
-	const FVector2D InitLocation(-NodeDistance * 7, -NodeDistance * 7);	//좌하단 노드 위치.
+	const FVector2D InitLocation(-NodeDistance * (BoardSize / 2), -NodeDistance * (BoardSize / 2));	//좌하단 노드 위치.
 	FActorSpawnParameters NodeSpawnParams;
 	NodeSpawnParams.Owner = this;
 	NodeSpawnParams.bNoFail = true;
@@ -107,17 +59,17 @@ void AOmokBoard::CreateAllNodes()
 	const FAttachmentTransformRules NodeAttachmentRules(EAttachmentRule::KeepRelative, false);
 
 	AllNodes.Reserve(225);
-	for(int32 x = 0; x < 15; x++)
+	for(int32 x = 0; x < BoardSize; x++)
 	{
-		for(int32 y = 0; y < 15; y++)
+		for(int32 y = 0; y < BoardSize; y++)
 		{
 			const FString NodeName(FString::Printf(TEXT("OmokNode %d, %d"), x, y));
 			NodeSpawnParams.Name = FName(*NodeName);
 			
 			TObjectPtr<AOmokNode> NewNode = GetWorld()->SpawnActor<AOmokNode>(
 				FVector(
-					InitLocation.X + (x * NodeDistance), //+ GetActorLocation().X,
-					InitLocation.Y + (y * NodeDistance), //+ GetActorLocation().Y,
+					InitLocation.X + (x * NodeDistance), 
+					InitLocation.Y + (y * NodeDistance), 
 					2.5f
 				),
 				GetActorUpVector().Rotation(),

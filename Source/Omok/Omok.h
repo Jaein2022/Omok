@@ -5,6 +5,119 @@
 #include "CoreMinimal.h"
 #include "Engine/Engine.h"
 
+
+USTRUCT(NoExport)
+struct OMOK_API FNodeColor
+{
+	//GENERATED_BODY()
+
+	FNodeColor(): Name(FText()), FixColor(FLinearColor(1.f, 0.f, 0.f, 0.5f)), ClearColor(FLinearColor::Transparent), Index(255)
+	{
+	}
+	
+	FNodeColor(const FNodeColor& Other): Name(Other.Name), FixColor(Other.FixColor), ClearColor(Other.ClearColor), Index(Other.Index)
+	{
+	}
+	
+	FNodeColor(FNodeColor&& Other): Name(Other.Name), FixColor(Other.FixColor), ClearColor(Other.ClearColor), Index(Other.Index)
+	{
+	}
+
+
+
+private:
+	FNodeColor(const FString& InName, const FLinearColor& InColor, const uint8 InIndex):
+		Name(FText::FromString(InName)), FixColor(InColor), ClearColor(InColor.R, InColor.G, InColor.B, 0.75f), Index(InIndex)
+	{
+		ensure(static_cast<int32>(this->Index) == AllNodeColors.Num());
+		AllNodeColors.Add(*this);
+	}
+	
+	FNodeColor(const FString& InName, const FLinearColor& InColor, const FLinearColor& InClearColor, const uint8 InIndex):
+		Name(FText::FromString(InName)), FixColor(InColor), ClearColor(InClearColor), Index(InIndex)
+	{
+		ensure(static_cast<int32>(this->Index) == AllNodeColors.Num());
+		AllNodeColors.Add(*this);
+	}
+
+
+
+public:
+	bool operator==(const FNodeColor& InNodeColor)
+	{
+		return this->Index == InNodeColor.Index;
+	}
+
+	bool operator!=(const FNodeColor& InNodeColor)
+	{
+		return this->Index != InNodeColor.Index;
+	}
+
+	bool operator==(const uint8 InIndex) const
+	{
+		return Index == InIndex;
+	}
+
+	bool operator!=(const uint8 InIndex) const
+	{
+		return Index != InIndex;
+	}
+
+	bool operator==(const FColor& InColor) const
+	{
+		return FixColor == InColor;
+	}
+
+	bool operator!=(const FColor& InColor) const
+	{
+		return FixColor != InColor;
+	}
+
+	bool operator==(const FText& InName) const
+	{
+		return Name.EqualToCaseIgnored(InName);
+	}
+
+	bool operator!=(const FText& InName) const
+	{
+		return !Name.EqualToCaseIgnored(InName);
+	}
+
+	FNodeColor& operator=(FNodeColor&& Other) = default;
+	
+	FNodeColor& operator=(const FNodeColor& Other) = default;
+
+	
+
+public:
+	static const TArray<FNodeColor>& GetAllNodeColors()
+	{
+		return AllNodeColors;
+	}
+
+
+public:
+	FText Name;
+	FLinearColor FixColor;
+	FLinearColor ClearColor;
+	uint8 Index;
+
+
+
+public:
+	static const FNodeColor Black;
+	static const FNodeColor White;
+	static const FNodeColor Transparent;
+
+
+
+private:
+	static TArray<FNodeColor> AllNodeColors;
+
+
+
+};
+
 //개발 지원 기능만 모아둔 클래스.
 class OMOK_API FOmokDevelopmentSupport
 //UCLASS() <- FOmokDevelopmentSupport.generated.h를 생성하지 않았으므로 사용할 수 없음.
@@ -30,7 +143,7 @@ public:
 		const FColor DisplayColor = FColor::Red
 	)
 	{
-		ensureMsgf(Caller, TEXT("%s"), TEXT("This function is only for actors."));
+		ensureMsgf(IsValidChecked(Caller), TEXT("%s"), TEXT("This function is only for actors."));
 
 		FString NetModeInfo;
 		switch(Caller->GetNetMode())
