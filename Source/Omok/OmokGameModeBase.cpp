@@ -87,20 +87,20 @@ void AOmokGameModeBase::BroadcastMatchEnd(const TObjectPtr<APlayerController> Wi
 		CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_DisplayResult(Winner->GetPlayerState<AOmokPlayerState>()->GetbWhite());
 	}
 
-	//FTimerHandle ReturnTimerHandle;
-	//GetWorldTimerManager().SetTimer(
-	//	ReturnTimerHandle,
-	//	FTimerDelegate::CreateLambda(
-	//		[this]()->void
-	//		{
-	//			ensure(CanServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true));
-	//			GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
-	//			ProcessServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true);
-	//		}
-	//	),
-	//	3.f,
-	//	false
-	//);
+	FTimerHandle ReturnTimerHandle;
+	GetWorldTimerManager().SetTimer(
+		ReturnTimerHandle,
+		FTimerDelegate::CreateLambda(
+			[this]()->void
+			{
+				ensure(CanServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true));
+				GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
+				ProcessServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true);
+			}
+		),
+		3.f,
+		false
+	);
 }
 
 APlayerController* AOmokGameModeBase::Login(
