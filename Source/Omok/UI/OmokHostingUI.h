@@ -6,7 +6,9 @@
 #include "Blueprint/UserWidget.h"
 #include "OmokHostingUI.generated.h"
 
-//호스팅 UI 클래스.
+/**
+ * 호스팅 UI 클래스.
+ */
 UCLASS()
 class OMOK_API UOmokHostingUI : public UUserWidget
 {
@@ -16,7 +18,7 @@ public:
 	UOmokHostingUI(const FObjectInitializer& ObjectInitializer);
 
 	//Ready버튼 비활성화 시키고 Waiting 문자열 띄우는 함수.
-	void SetWaiting(const bool InbClientJoined = false);	
+	void SetWaiting();	
 
 	//Ready버튼 활성화 시키고 Joined 문자열 띄우는 함수.
 	void SetJoined();	
@@ -33,9 +35,6 @@ protected:
 
 
 private:
-	UFUNCTION()
-	void OnClickedReadyButton();
-
 	UFUNCTION()
 	void OnClickedCancelButton();
 
@@ -94,7 +93,5 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> CancelButton;
-
-	bool IsTraveling;
 
 };

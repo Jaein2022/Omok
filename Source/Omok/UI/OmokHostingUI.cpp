@@ -14,10 +14,9 @@ UOmokHostingUI::UOmokHostingUI(const FObjectInitializer& ObjectInitializer):
 	Super(ObjectInitializer),
 	JoinedText(FText::FromString(FString(TEXT("Joined!"))))
 {
-	IsTraveling = false;
 }
 
-void UOmokHostingUI::SetWaiting(const bool InbClientJoined /*= false*/)
+void UOmokHostingUI::SetWaiting()
 {
 	GetWorld()->GetTimerManager().SetTimer(
 		HostingUITimerHandle,
@@ -31,20 +30,10 @@ void UOmokHostingUI::SetWaiting(const bool InbClientJoined /*= false*/)
 	WaitingTextBlock->SetText(WaitingTexts[WaitingTextIndex]);
 	WaitingTextBlock->SetJustification(ETextJustify::Left);
 
-	if(false == InbClientJoined)
-	{
-		HostIPAddressBlock->SetVisibility(ESlateVisibility::Visible);
-		HostIPAddressBlock->SetIsEnabled(true);
+	HostIPAddressBlock->SetVisibility(ESlateVisibility::Visible);
+	HostIPAddressBlock->SetIsEnabled(true);
 
-		ReadyButtonTextBlock->SetColorAndOpacity(FColor(100, 100, 100));
-	}
-	else
-	{
-		HostIPAddressBlock->SetVisibility(ESlateVisibility::Hidden);
-		HostIPAddressBlock->SetIsEnabled(false);
-
-		ReadyButtonTextBlock->SetColorAndOpacity(FColor::Black);
-	}
+	ReadyButtonTextBlock->SetColorAndOpacity(FColor(100, 100, 100));
 
 	ReadyButton->SetIsEnabled(false);
 }
@@ -62,7 +51,6 @@ void UOmokHostingUI::SetJoined()
 	ReadyButtonTextBlock->SetColorAndOpacity(FColor::Black);
 
 	ReadyButton->SetIsEnabled(true);
-	ReadyButton->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UOmokHostingUI::SetFlickeringOn()
@@ -111,13 +99,10 @@ void UOmokHostingUI::NativeConstruct()
 	HostIPAddressBlock->SetText(FText::FromString(TEXT("Host IP : ") + HostIP));
 
 	ensure(ReadyButton);
-	ReadyButton->OnClicked.AddDynamic(this, &UOmokHostingUI::OnClickedReadyButton);
-
 	ReadyButton->SetIsEnabled(false);
 
 	ensure(ReadyButtonTextBlock);
 	ReadyButtonTextBlock->SetColorAndOpacity(FColor(100, 100, 100));
-	
 
 	bFlickeringSwitch = false;
 
@@ -132,11 +117,6 @@ void UOmokHostingUI::NativeConstruct()
 	GetGameInstance()->OnNotifyPreClientTravel().AddUObject(this, &UOmokHostingUI::OnNotifyPreLevelChange);
 }
 
-void UOmokHostingUI::OnClickedReadyButton()
-{
-	ReadyButton->SetIsEnabled(false);
-}
-
 void UOmokHostingUI::OnClickedCancelButton()
 {
 	GetWorld()->GetTimerManager().ClearTimer(HostingUITimerHandle);
@@ -149,14 +129,12 @@ void UOmokHostingUI::OnJoinedClient(AGameModeBase* GameMode, APlayerController* 
 
 void UOmokHostingUI::OnDisjoinedClient(AGameModeBase* GameMode, AController* ExitingPlayer)
 {
-	SetWaiting(IsTraveling);
-	IsTraveling = false;
+	SetWaiting();
 }
 
 void UOmokHostingUI::OnNotifyPreLevelChange(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel)
 {
-	SetWaiting(true);
-	IsTraveling = true;
+	SetWaiting();
 }
 
 void UOmokHostingUI::ChangeWaitingText()

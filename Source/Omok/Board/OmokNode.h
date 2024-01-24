@@ -4,56 +4,77 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Omok/Omok.h"
+#include "OmokBoard.h"
 #include "OmokNode.generated.h"
 
-//바둑알.
 UCLASS()
 class OMOK_API AOmokNode : public AActor
 {
 	GENERATED_BODY()
-
+	
 public:	
 	// Sets default values for this actor's properties
 	AOmokNode();
-
-	void SetClearColor(const uint8 InbWhite);
-
-	void ReturnColor();
-
-	void FixColor(const uint8 InbWhite);
-
-	void SetCoordinate(const int32 X, const int32 Y);
-
-	void SetNodeScale(const float InScale);
-
-
-
-public:
-	FORCEINLINE const FIntVector2& GetCoordinate() const { return Coordinate; }
-	FORCEINLINE const FNodeColor& GetNodeColor() const { return Color; }
-	FORCEINLINE const bool IsFixed() const { return bFixed; }
-
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
+	void SetNodeColor(ENodeColor NewColor);
+
+	UFUNCTION()
+	void OnBeginCursorOverlap();
+	
+	UFUNCTION()
+	void OnEndCursorOverlap();
+
+	UFUNCTION()
+	void OnClicked();
+
+	FORCEINLINE ENodeColor GetNodeColor() const { return CurrentColor; }
+
+	void SetCoordinate(int32 X, int32 Y);
+
+	FORCEINLINE const FIntVector2& GetCoordinate() const { return Coordinate; }
 
 protected:
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> NodeMesh;
 
-	TObjectPtr<UMaterialInstanceDynamic> NodeMaterialInstance;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UMaterial> BlackMaterial;	
+	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UMaterial> ClearBlackMaterial;	
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UMaterial> WhiteMaterial;	
+	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UMaterial> ClearWhiteMaterial;	
+	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UMaterial> TransparentMaterial;	
+	//진짜 투명이면 안보여서 지금은 반투명 파란색.
 
+	////게임스테이트.
+	//UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	//TObjectPtr<class AOmokGameStateBase> OmokGameState;
 
 private:
-	FNodeColor Color;	//현재 노드 색상.
+
+	TObjectPtr<AOmokBoard> Board;
+
+	FScriptDelegate BeginCursorOverlapDelegate;
+	FScriptDelegate EndCursorOverlapDelegate;
+	FScriptDelegate ClickDelegate;
+
+	ENodeColor CurrentColor;	//현재 노드 색상.
 	FIntVector2 Coordinate;	//노드 좌표. X++이 위, Y++이 오른쪽.
 
-	bool bFixed;	//노드 색상 고정 됨/안됨.
-
-
-
+	bool IsFixed;	//노드 색상 고정 됨/안됨.
 };
