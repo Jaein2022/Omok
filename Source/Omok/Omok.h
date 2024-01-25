@@ -63,14 +63,14 @@ public:
 		return Index != InIndex;
 	}
 
-	bool operator==(const FColor& InColor) const
+	bool operator==(const FLinearColor& InColor) const
 	{
-		return FixColor == InColor;
+		return FixColor.Equals(InColor);
 	}
 
-	bool operator!=(const FColor& InColor) const
+	bool operator!=(const FLinearColor& InColor) const
 	{
-		return FixColor != InColor;
+		return !FixColor.Equals(InColor);
 	}
 
 	bool operator==(const FText& InName) const

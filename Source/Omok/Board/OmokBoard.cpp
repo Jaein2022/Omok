@@ -58,7 +58,7 @@ void AOmokBoard::CreateAllNodes()
 
 	const FAttachmentTransformRules NodeAttachmentRules(EAttachmentRule::KeepRelative, false);
 
-	AllNodes.Reserve(225);
+	AllNodes.Reserve(BoardSize * BoardSize);
 	for(int32 x = 0; x < BoardSize; x++)
 	{
 		for(int32 y = 0; y < BoardSize; y++)
