@@ -4,7 +4,7 @@
 #include "OmokTextBlock.h"
 #include "Fonts/SlateFontInfo.h"
 
-const FSlateFontInfo UOmokTextBlock::MessageFontInfo = FSlateFontInfo(FCoreStyle::GetDefaultFont(), 24, TEXT("Regular"));
+//const FSlateFontInfo UOmokTextBlock::MessageFontInfo = FSlateFontInfo(FCoreStyle::GetDefaultFont(), 24, TEXT("Regular"));
 
 UOmokTextBlock::UOmokTextBlock()
 {
@@ -14,7 +14,7 @@ UOmokTextBlock::UOmokTextBlock()
 void UOmokTextBlock::SetMessageAndConfig(const FText& InText, const float Width, const uint8 bWhite)
 {
 	SetText(InText);
-	SetFont(MessageFontInfo);
+	SetFont(FSlateFontInfo(FCoreStyle::GetDefaultFont(), 24, TEXT("Regular")));
 	SetColorAndOpacity(bWhite ? FColor::White : FColor::Black);
 	SetMinDesiredWidth(Width);
 	WrapTextAt = Width;
