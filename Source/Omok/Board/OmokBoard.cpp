@@ -79,8 +79,13 @@ void AOmokBoard::CreateAllNodes()
 			NewNode->SetNodeScale(0.05f);
 			NewNode->AttachToComponent(this->RootComponent, NodeAttachmentRules);
 			NewNode->SetCoordinate(x, y);
+			
+#if WITH_EDITOR
 			NewNode->SetActorLabel(NodeName);
 			//Label: 액터가 언리얼 에디터 뷰포트에 배치되었을때 보이는 이름. Name과 다르다.
+			//SetActorLabel()은 디버그 빌드, 디벨롭먼트 빌드에서만 존재하는 함수이다.
+			//런타임에 유효성이 생기는 GIsEditor로는 컴파일 단계에서 발생하는 error C2039를 막을 수 없다.
+#endif
 
 			AllNodes.Push(NewNode);
 		}

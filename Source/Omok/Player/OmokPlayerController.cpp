@@ -63,8 +63,6 @@ void AOmokPlayerController::SetMessageColor(const uint8 InbWhite)
 
 void AOmokPlayerController::ClientRPC_DisplayResult_Implementation(const uint8 WinnerColor)
 {
-	FOmokDevelopmentSupport::DisplayDebugMessageForActors(this, __FUNCTION__, TEXT("Result."), 30.f);
-
 	PlayUI->DisplayResult(WinnerColor);
 }
 
@@ -194,7 +192,8 @@ void AOmokPlayerController::OnRep_PlayerState()
 
 void AOmokPlayerController::StartHosting()
 {
-	ensure(GetWorld()->ServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true));
+	const bool ServerTravelResult = GetWorld()->ServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true);
+	ensure(ServerTravelResult);
 }
 
 void AOmokPlayerController::CancelHosting() 

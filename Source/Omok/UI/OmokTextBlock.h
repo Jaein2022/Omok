@@ -20,6 +20,7 @@ public:
 
 
 private:
-	const static struct FSlateFontInfo MessageFontInfo;	//폰트 정보 저장 구조체.
+	//const static struct FSlateFontInfo MessageFontInfo;	//폰트 정보 저장 구조체.
 	//모든 텍스트블록들이 동일한 폰트 정보를 사용하므로 정적 변수 하나를 공유하게 한다.
+	//컴파일 단계에서 FCoreStyle::GetDefaultFont()가 제대로 동작하지 않으므로 사용 금지.
 };
