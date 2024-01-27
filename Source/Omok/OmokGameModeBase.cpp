@@ -7,7 +7,6 @@
 #include "Player/OmokPlayerState.h"
 #include "Player/OmokPlayerController.h"
 #include "Omok.h"
-#include "GameFramework/GameState.h"
 
 AOmokGameModeBase::AOmokGameModeBase()
 {
@@ -34,12 +33,14 @@ void AOmokGameModeBase::SetServerReady(const TObjectPtr<AOmokPlayerController> T
 	if(bServerReady && bClientReady)
 	{
 		const bool bCanServerTravel = CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
-		ensure(bCanServerTravel);
-		if(bCanServerTravel)
+		if(false == bCanServerTravel)
 		{
-			GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
-			ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
+			ensure(bCanServerTravel);
+			return;
 		}
+
+		GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
+		ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
 	}
 	else
 	{
@@ -67,12 +68,14 @@ void AOmokGameModeBase::SetClientReady(const TObjectPtr<AOmokPlayerController> T
 	if(bServerReady && bClientReady)
 	{
 		const bool bCanServerTravel = CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
-		ensure(bCanServerTravel);
-		if(bCanServerTravel)
+		if(false == bCanServerTravel)
 		{
-			GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
-			ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
+			ensure(bCanServerTravel);
+			return;
 		}
+
+		GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
+		ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
 	}
 	else
 	{
@@ -101,13 +104,15 @@ void AOmokGameModeBase::BroadcastMatchEnd(const TObjectPtr<APlayerController> Wi
 		FTimerDelegate::CreateLambda(
 			[this]()->void
 			{	
-				const bool bCanServerTravel = CanServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true);
-				ensure(bCanServerTravel);
-				if(bCanServerTravel)
+				const bool bCanServerTravel = CanServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), false);
+				if(false == bCanServerTravel)
 				{
-					GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
-					ProcessServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true);
+					ensure(bCanServerTravel);
+					return;
 				}
+
+				GetWorld()->NextTravelType = ETravelType::TRAVEL_Relative;
+				ProcessServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"));
 			}
 		),
 		3.f,
