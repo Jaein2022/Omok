@@ -39,6 +39,11 @@ public:
 
 
 protected:
+	void FlickerTravelingText();
+
+
+
+protected:
 	virtual void NativeConstruct() override;
 
 
@@ -103,6 +108,11 @@ private:
 	
 	UPROPERTY(meta = (Bindwidget))
 	TObjectPtr<class UTextBlock> ResultTextBlock;
+	
+	UPROPERTY(meta = (Bindwidget))
+	TObjectPtr<class UTextBlock> TravelingTextBlock;
+
+	FTimerHandle TravelingTimerHandle;
 
 
 

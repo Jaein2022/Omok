@@ -95,7 +95,7 @@ void UOmokPlayUI::UpdateTimerWithLocalDeltaTime(const float LocalDeltaSeconds)
 void UOmokPlayUI::SetOwningPlayerColor(const uint8 InbWhite)
 {
 	OwningPlayerColor = InbWhite;
-	PlayerColorPanel->SetColorAndOpacity(OwningPlayerColor ? FColor::White : FColor::Black);
+	PlayerColorPanel->SetColorAndOpacity(FNodeColor::GetAllNodeColors()[OwningPlayerColor].FixColor);
 }
 
 void UOmokPlayUI::SwitchMenu()
@@ -117,6 +117,14 @@ void UOmokPlayUI::DisplayResult(const uint8 WinnerColor)
 	MatchEndOverlay->SetVisibility(ESlateVisibility::Visible);
 	MatchEndOverlay->SetIsEnabled(true);
 
+	GetWorld()->GetTimerManager().SetTimer(
+		TravelingTimerHandle, 
+		this,
+		&UOmokPlayUI::FlickerTravelingText,
+		0.5f,
+		true
+	);
+
 	WinnerTextBlock->SetColorAndOpacity(FNodeColor::GetAllNodeColors()[WinnerColor].FixColor);
 
 	if(WinnerColor == OwningPlayerColor)
@@ -128,6 +136,18 @@ void UOmokPlayUI::DisplayResult(const uint8 WinnerColor)
 	{
 		WinnerTextBlock->SetText(FNodeColor::GetAllNodeColors()[WinnerColor].Name);
 		ResultTextBlock->SetText(FText::FromString(TEXT("wins")));
+	}
+}
+
+void UOmokPlayUI::FlickerTravelingText()
+{
+	if(ESlateVisibility::Visible == TravelingTextBlock->GetVisibility())
+	{
+		TravelingTextBlock->SetVisibility(ESlateVisibility::Hidden);
+	}
+	else
+	{
+		TravelingTextBlock->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
@@ -165,6 +185,8 @@ void UOmokPlayUI::NativeConstruct()
 	ensure(WinnerTextBlock);
 
 	ensure(ResultTextBlock);
+
+	ensure(TravelingTextBlock);
 }
 
 void UOmokPlayUI::OnTextCommitted_DisplayMessage(const FText& InText, ETextCommit::Type CommitType)

@@ -58,7 +58,7 @@ void AOmokBoard::CreateAllNodes()
 
 	const FAttachmentTransformRules NodeAttachmentRules(EAttachmentRule::KeepRelative, false);
 
-	AllNodes.Reserve(225);
+	AllNodes.Reserve(BoardSize * BoardSize);
 	for(int32 x = 0; x < BoardSize; x++)
 	{
 		for(int32 y = 0; y < BoardSize; y++)
@@ -75,12 +75,22 @@ void AOmokBoard::CreateAllNodes()
 				GetActorUpVector().Rotation(),
 				NodeSpawnParams
 			);
-			ensure(NewNode);
+			
+			if(nullptr == NewNode)
+			{
+				ensure(NewNode);
+				return;
+			}
+
 			NewNode->SetNodeScale(0.05f);
 			NewNode->AttachToComponent(this->RootComponent, NodeAttachmentRules);
 			NewNode->SetCoordinate(x, y);
+			
+#if WITH_EDITOR
 			NewNode->SetActorLabel(NodeName);
 			//Label: 액터가 언리얼 에디터 뷰포트에 배치되었을때 보이는 이름. Name과 다르다.
+			//SetActorLabel()은 디버그 빌드, 디벨롭먼트 빌드에서만 존재하는 함수이다.
+#endif
 
 			AllNodes.Push(NewNode);
 		}

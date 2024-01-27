@@ -41,7 +41,13 @@ void AOmokNode::ReturnColor()
 	}
 
 	Color = FNodeColor::Transparent;
+
+#if UE_BUILD_DEBUG
 	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::Transparent.FixColor);
+#else
+	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::Transparent.ClearColor);
+#endif
+
 }
 
 void AOmokNode::FixColor(const uint8 InbWhite)
@@ -80,5 +86,10 @@ void AOmokNode::BeginPlay()
 	NodeMesh->SetMaterial(0, NodeMaterialInstance);
 
 	Color = FNodeColor::Transparent;
+
+#if UE_BUILD_DEBUG
 	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::Transparent.FixColor);
+#else
+	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::Transparent.ClearColor);
+#endif
 }

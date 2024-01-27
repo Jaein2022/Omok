@@ -63,8 +63,6 @@ void AOmokPlayerController::SetMessageColor(const uint8 InbWhite)
 
 void AOmokPlayerController::ClientRPC_DisplayResult_Implementation(const uint8 WinnerColor)
 {
-	FOmokDevelopmentSupport::DisplayDebugMessageForActors(this, __FUNCTION__, TEXT("Result."), 30.f);
-
 	PlayUI->DisplayResult(WinnerColor);
 }
 
@@ -77,12 +75,6 @@ void AOmokPlayerController::BeginPlay()
 	{
 		return;
 	}
-	
-	//GEngine->OnNetworkFailure().AddUObject(this, &AOmokPlayerController::NetworkFailureTestFunc);
-
-	//auto temp = GetPlayerState<APlayerState>()->GetPlayerName();
-	//auto temp1 = GetPlayerState<APlayerState>()->GetUniqueId().GetUniqueNetId()->ToString();
-	//auto temp2 = GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId()->ToString();
 
 	const FString CurrentWorldName = GetWorld()->GetName();
 	if(CurrentWorldName == TEXT("Lobby"))
@@ -194,20 +186,29 @@ void AOmokPlayerController::OnRep_PlayerState()
 
 void AOmokPlayerController::StartHosting()
 {
-	ensure(GetWorld()->ServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true));
+	const bool bServerTravelResult = GetWorld()->ServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true);
+	if(false == bServerTravelResult)
+	{
+		ensure(bServerTravelResult);
+		return;
+	}
 }
 
 void AOmokPlayerController::CancelHosting() 
 {
-	ClientTravel(TEXT("/Game/Maps/Lobby?Closed"), ETravelType::TRAVEL_Absolute);
+	ClientTravel(TEXT("/Game/Maps/Lobby?Closed"), ETravelType::TRAVEL_Absolute, true);
 }
 
 void AOmokPlayerController::OnClickedEnterButton_Connect()
 {
 	const FString IPAddress = LobbyUI->GetIPAddress();
-	ensureMsgf(false == IPAddress.IsEmpty(), TEXT("%s"), TEXT("IP address must not be empty."));
+	if(IPAddress.IsEmpty())
+	{
+		ensureMsgf(false == IPAddress.IsEmpty(), TEXT("%s"), TEXT("IP address must not be empty."));
+		return;
+	}
 	
-	ClientTravel(IPAddress, ETravelType::TRAVEL_Absolute);
+	ClientTravel(IPAddress, ETravelType::TRAVEL_Absolute, true);
 }
 
 void AOmokPlayerController::OnTextCommitted_Connect(const FText& InText, ETextCommit::Type CommitMethod)
@@ -217,14 +218,18 @@ void AOmokPlayerController::OnTextCommitted_Connect(const FText& InText, ETextCo
 		return;
 	}
 
-	ensureMsgf(false == InText.IsEmpty(), TEXT("%s"), TEXT("IP address must not be empty."));
+	if(InText.IsEmpty())
+	{
+		ensureMsgf(false == InText.IsEmpty(), TEXT("%s"), TEXT("IP address must not be empty."));
+		return;
+	}
 
-	ClientTravel(InText.ToString(), ETravelType::TRAVEL_Absolute);
+	ClientTravel(InText.ToString(), ETravelType::TRAVEL_Absolute, true);
 }
 
 void AOmokPlayerController::Disconnect()
 {
-	ClientTravel(TEXT("/Game/Maps/Lobby?Closed"), ETravelType::TRAVEL_Absolute);
+	ClientTravel(TEXT("/Game/Maps/Lobby?Closed"), ETravelType::TRAVEL_Absolute, true);
 }
 
 void AOmokPlayerController::NotifyOnReadied()

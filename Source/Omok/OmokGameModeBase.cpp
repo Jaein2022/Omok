@@ -7,7 +7,6 @@
 #include "Player/OmokPlayerState.h"
 #include "Player/OmokPlayerController.h"
 #include "Omok.h"
-#include "GameFramework/GameState.h"
 
 AOmokGameModeBase::AOmokGameModeBase()
 {
@@ -33,7 +32,13 @@ void AOmokGameModeBase::SetServerReady(const TObjectPtr<AOmokPlayerController> T
 
 	if(bServerReady && bClientReady)
 	{
-		ensure(CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true));
+		const bool bCanServerTravel = CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
+		if(false == bCanServerTravel)
+		{
+			ensure(bCanServerTravel);
+			return;
+		}
+
 		GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
 		ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
 	}
@@ -62,7 +67,13 @@ void AOmokGameModeBase::SetClientReady(const TObjectPtr<AOmokPlayerController> T
 
 	if(bServerReady && bClientReady)
 	{
-		ensure(CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true));
+		const bool bCanServerTravel = CanServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
+		if(false == bCanServerTravel)
+		{
+			ensure(bCanServerTravel);
+			return;
+		}
+
 		GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
 		ProcessServerTravel(TEXT("/Game/Maps/PlayLevel?Listen"), true);
 	}
@@ -92,10 +103,16 @@ void AOmokGameModeBase::BroadcastMatchEnd(const TObjectPtr<APlayerController> Wi
 		ReturnTimerHandle,
 		FTimerDelegate::CreateLambda(
 			[this]()->void
-			{
-				ensure(CanServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true));
-				GetWorld()->NextTravelType = ETravelType::TRAVEL_Absolute;
-				ProcessServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), true);
+			{	
+				const bool bCanServerTravel = CanServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"), false);
+				if(false == bCanServerTravel)
+				{
+					ensure(bCanServerTravel);
+					return;
+				}
+
+				GetWorld()->NextTravelType = ETravelType::TRAVEL_Relative;
+				ProcessServerTravel(TEXT("/Game/Maps/HostingLevel?Listen"));
 			}
 		),
 		3.f,
