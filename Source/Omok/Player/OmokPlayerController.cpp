@@ -246,7 +246,7 @@ void AOmokPlayerController::NotifyOnReadied()
 
 void AOmokPlayerController::QuitGame()
 {
-	ConsoleCommand("quit");
+	ConsoleCommand(TEXT("quit"));
 }
 
 void AOmokPlayerController::ServerRPC_NotifyOnReadied_Implementation()

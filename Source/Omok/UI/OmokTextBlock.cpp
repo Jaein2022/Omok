@@ -3,6 +3,7 @@
 
 #include "OmokTextBlock.h"
 #include "Fonts/SlateFontInfo.h"
+#include "Omok/Omok.h"
 
 //const FSlateFontInfo UOmokTextBlock::MessageFontInfo = FSlateFontInfo(FCoreStyle::GetDefaultFont(), 24, TEXT("Regular"));
 
@@ -15,7 +16,7 @@ void UOmokTextBlock::SetMessageAndConfig(const FText& InText, const float Width,
 {
 	SetText(InText);
 	SetFont(FSlateFontInfo(FCoreStyle::GetDefaultFont(), 24, TEXT("Regular")));
-	SetColorAndOpacity(bWhite ? FColor::White : FColor::Black);
+	SetColorAndOpacity(FNodeColor::GetAllNodeColors()[bWhite].FixColor);
 	SetMinDesiredWidth(Width);
 	WrapTextAt = Width;
 }

@@ -91,11 +91,11 @@ void AOmokGameModeBase::SetClientReady(const TObjectPtr<AOmokPlayerController> T
 	}
 }
 
-void AOmokGameModeBase::BroadcastMatchEnd(const TObjectPtr<APlayerController> Winner)
+void AOmokGameModeBase::BroadcastMatchEnd(const TObjectPtr<AOmokPlayerState> Winner)
 {
 	for(FConstPlayerControllerIterator it = GetWorld()->GetPlayerControllerIterator(); it; it++)
 	{
-		CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_DisplayResult(Winner->GetPlayerState<AOmokPlayerState>()->GetbWhite());
+		CastChecked<AOmokPlayerController>(it->Get())->ClientRPC_DisplayResult(Winner->GetbWhite());
 	}
 
 	FTimerHandle ReturnTimerHandle;

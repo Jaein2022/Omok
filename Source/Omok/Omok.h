@@ -27,7 +27,7 @@ struct OMOK_API FNodeColor
 
 private:
 	FNodeColor(const FString& InName, const FLinearColor& InColor, const uint8 InIndex):
-		Name(FText::FromString(InName)), FixColor(InColor), ClearColor(InColor.R, InColor.G, InColor.B, 0.75f), Index(InIndex)
+		Name(FText::FromString(InName)), FixColor(InColor), ClearColor(InColor.R, InColor.G, InColor.B, 0.5f), Index(InIndex)
 	{
 		ensure(static_cast<int32>(this->Index) == AllNodeColors.Num());
 		AllNodeColors.Add(*this);

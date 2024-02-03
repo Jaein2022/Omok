@@ -24,7 +24,7 @@ bool AOmokPlayer::CheckWinningCondition(const FIntVector2& InCoord, const uint8 
 	ensure(HasAuthority());
 	ensure(OmokBoard->GetNode(InCoord)->IsFixed());
 
-	if(OmokBoard->GetNode(InCoord)->GetNodeColor() != InbWhite)
+	if(OmokBoard->GetNode(InCoord)->GetNodeColorIndex() != InbWhite)
 	{
 		return false;
 	}
@@ -55,7 +55,7 @@ bool AOmokPlayer::CheckWinningCondition(const FIntVector2& InCoord, const uint8 
 
 const int32 AOmokPlayer::CountSameColorNodes(const int32 X, const int32 Y, const uint8 InbWhite, const int8 XDir, const int8 YDir) const
 {
-	if(OmokBoard->GetNode(X, Y)->GetNodeColor() != InbWhite)
+	if(OmokBoard->GetNode(X, Y)->GetNodeColorIndex() != InbWhite)
 	{
 		return 0;
 	}
