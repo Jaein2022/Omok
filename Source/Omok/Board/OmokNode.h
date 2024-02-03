@@ -31,7 +31,7 @@ public:
 
 public:
 	FORCEINLINE const FIntVector2& GetCoordinate() const { return Coordinate; }
-	FORCEINLINE const FNodeColor& GetNodeColor() const { return Color; }
+	FORCEINLINE const uint8 GetNodeColorIndex() const { return ColorIndex; }
 	FORCEINLINE const bool IsFixed() const { return bFixed; }
 
 
@@ -49,7 +49,7 @@ protected:
 
 
 private:
-	FNodeColor Color;	//현재 노드 색상.
+	uint8 ColorIndex;	//현재 노드 색상 인덱스.
 	FIntVector2 Coordinate;	//노드 좌표. X++이 위, Y++이 오른쪽.
 
 	bool bFixed;	//노드 색상 고정 됨/안됨.

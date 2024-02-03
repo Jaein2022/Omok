@@ -29,8 +29,8 @@ void AOmokNode::SetClearColor(const uint8 InbWhite)
 		return;
 	}
 	
-	Color = FNodeColor::GetAllNodeColors()[InbWhite];
-	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::GetAllNodeColors()[InbWhite].ClearColor);
+	ColorIndex = InbWhite;
+	NodeMaterialInstance->SetVectorParameterValue(TEXT("NodeColor"), FNodeColor::GetAllNodeColors()[ColorIndex].ClearColor);
 }
 
 void AOmokNode::ReturnColor()
@@ -40,12 +40,12 @@ void AOmokNode::ReturnColor()
 		return;
 	}
 
-	Color = FNodeColor::Transparent;
+	ColorIndex = 2;
 
 #if UE_BUILD_DEBUG
-	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::Transparent.FixColor);
+	NodeMaterialInstance->SetVectorParameterValue(TEXT("NodeColor"), FNodeColor::GetAllNodeColors()[ColorIndex].FixColor);
 #else
-	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::Transparent.ClearColor);
+	NodeMaterialInstance->SetVectorParameterValue(TEXT("NodeColor"), FNodeColor::GetAllNodeColors()[ColorIndex].ClearColor);
 #endif
 
 }
@@ -57,8 +57,8 @@ void AOmokNode::FixColor(const uint8 InbWhite)
 		return;
 	}
 
-	Color = FNodeColor::GetAllNodeColors()[InbWhite];
-	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::GetAllNodeColors()[InbWhite].FixColor);
+	ColorIndex = InbWhite;
+	NodeMaterialInstance->SetVectorParameterValue(TEXT("NodeColor"), FNodeColor::GetAllNodeColors()[ColorIndex].FixColor);
 	bFixed = true;
 }
 
@@ -85,11 +85,11 @@ void AOmokNode::BeginPlay()
 
 	NodeMesh->SetMaterial(0, NodeMaterialInstance);
 
-	Color = FNodeColor::Transparent;
+	ColorIndex = 2;
 
 #if UE_BUILD_DEBUG
-	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::Transparent.FixColor);
+	NodeMaterialInstance->SetVectorParameterValue(TEXT("NodeColor"), FNodeColor::GetAllNodeColors()[ColorIndex].FixColor);
 #else
-	NodeMaterialInstance->SetVectorParameterValue("NodeColor", FNodeColor::Transparent.ClearColor);
+	NodeMaterialInstance->SetVectorParameterValue(TEXT("NodeColor"), FNodeColor::GetAllNodeColors()[ColorIndex].ClearColor);
 #endif
 }

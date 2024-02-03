@@ -21,7 +21,7 @@ public:
 
 	void SetClientReady(const TObjectPtr<class AOmokPlayerController> ThisOmokPC);
 
-	void BroadcastMatchEnd(const TObjectPtr<class APlayerController> Winner);
+	void BroadcastMatchEnd(const TObjectPtr<class AOmokPlayerState> Winner);
 
 
 

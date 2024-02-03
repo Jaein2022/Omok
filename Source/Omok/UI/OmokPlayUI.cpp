@@ -44,7 +44,7 @@ void UOmokPlayUI::ResetTimer(const uint8 InCurrentPlayerColor, const float Serve
 
 	RemainingTime = PlayTime;
 
-	CurrentRemainingTimeText->SetColorAndOpacity(CurrentPlayerColor == 1 ? FColor::White : FColor::Black);
+	CurrentRemainingTimeText->SetColorAndOpacity(FNodeColor::GetAllNodeColors()[CurrentPlayerColor].FixColor);
 	CurrentRemainingTimeText->SetText(FText::FromString(FString::Printf(TEXT("%.2f"), RemainingTime)));
 
 	PrevServerTimeSeconds = ServerTimeSeconds;
@@ -206,7 +206,6 @@ void UOmokPlayUI::OnTextCommitted_DisplayMessage(const FText& InText, ETextCommi
 
 	MessageScrollBox->AddChild(MessageBlock);
 	MessageInputBox->SetText(FText());
-	//ChattingScrollBox->RemoveChild();
 }
 
 void UOmokPlayUI::OnClickedSendButton_DisplayMessage()

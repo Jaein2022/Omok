@@ -62,7 +62,7 @@ void AOmokGameStateBase::DistributeNodeCoord(const FIntVector2& InCoord, const T
 	if(ServerPlayerState->IsWinner(InCoord, Sender->GetbWhite()))
 	{
 		FinishMatch();
-		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->BroadcastMatchEnd(Sender->GetPlayerController());
+		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->BroadcastMatchEnd(Sender);
 	}
 	else
 	{
@@ -81,7 +81,7 @@ void AOmokGameStateBase::RequestMatchEnd(const TObjectPtr<class AOmokPlayerState
 			continue;
 		}
 
-		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->BroadcastMatchEnd(PS->GetPlayerController());
+		GetWorld()->GetAuthGameMode<AOmokGameModeBase>()->BroadcastMatchEnd(CastChecked<AOmokPlayerState>(PS));
 	}
 }
 
